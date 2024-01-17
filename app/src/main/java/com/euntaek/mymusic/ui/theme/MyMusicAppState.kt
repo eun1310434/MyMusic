@@ -23,6 +23,9 @@ import androidx.navigation.compose.rememberNavController
  */
 sealed class Screen(val route: String) {
     object Home : Screen("home")
+
+    object AlbumInfo : Screen("album_info")
+
     object Player : Screen("player/{musicUri}") {
         fun createRoute(musicUri: String) = "player/$musicUri"
     }
@@ -52,6 +55,12 @@ class MyMusicAppState(
         if (from.lifecycleIsResumed()) {
             val encodedUri = Uri.encode(musicUri)
             navController.navigate(Screen.Player.createRoute(encodedUri))
+        }
+    }
+    fun navigateToAlbumInfo(from: NavBackStackEntry) {
+        // In order to discard duplicated navigation events, we check the Lifecycle
+        if (from.lifecycleIsResumed()) {
+            navController.navigate(Screen.AlbumInfo.route)
         }
     }
 

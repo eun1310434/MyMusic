@@ -1,6 +1,6 @@
 package com.euntaek.mymusic.ui.theme
 
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
 
@@ -9,7 +9,7 @@ fun MyMusicTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colors = MyMusicColors,
+        colorScheme = MyMusicColors,
         typography = MyMusicTypography,
         shapes = MyMusicShapes,
         content = content
