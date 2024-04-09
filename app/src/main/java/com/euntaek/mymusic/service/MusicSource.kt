@@ -25,12 +25,7 @@ class MusicSource @Inject constructor(
         state = State.STATE_INITIALIZING
         Dispatchers.IO
 
-//        val allAlbums = musicDatabase.getAlbums()
-//        album = allAlbums.firstOrNull()
-//        Log.e("Test", "" + allAlbums.toString())
-
         val allSongs = musicDatabase.getAllSongs()
-        Log.e("Test", "" + allSongs.toString())
         songs = allSongs.map { song ->
             MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
@@ -66,6 +61,7 @@ class MusicSource @Inject constructor(
             .setMediaId(song.description.mediaId)
             .setIconUri(song.description.iconUri)
             .build()
+
         MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
     }.toMutableList()
 

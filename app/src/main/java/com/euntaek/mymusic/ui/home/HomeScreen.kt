@@ -244,43 +244,6 @@ fun MusicListItem(song: Song, onClick: (Song) -> Unit) {
         onLikeClick = {},
         onContentClick = { onClick(song) }
     )
-//    Column(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .clickable { onClick(song) }
-//    ) {
-//        Divider(modifier = Modifier.fillMaxWidth())
-//        Row(modifier = Modifier.padding(16.dp)) {
-//            Image(
-//                modifier = Modifier
-//                    .size(56.dp)
-//                    .clip(MaterialTheme.shapes.medium)
-//                    .align(Alignment.CenterVertically),
-//                painter = rememberAsyncImagePainter(song.imageUrl),
-//                contentDescription = null,
-//                contentScale = ContentScale.Crop,
-//            )
-//            Spacer(modifier = Modifier.width(16.dp))
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .align(Alignment.CenterVertically)
-//                    .weight(1f)
-//            ) {
-//                Text(
-//                    text = song.title,
-//                    style = MaterialTheme.typography.titleLarge,
-//                    maxLines = 2
-//                )
-//                Spacer(modifier = Modifier.height(5.dp))
-//                Text(
-//                    text = song.subtitle,
-//                    style = MaterialTheme.typography.titleMedium,
-//                    maxLines = 2
-//                )
-//            }
-//        }
-//    }
 }
 
 @Composable
@@ -316,25 +279,19 @@ fun MusicListItem(
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            androidx.compose.material3.Text(
+            Text(
                 modifier = Modifier.alpha(0.75f),
                 text = author,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 13.sp,
             )
-            androidx.compose.material3.Text(
+            Text(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
-        androidx.compose.material3.Text(
-            text = duration,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
         Spacer(modifier = Modifier.width(16.dp))
         IconButton(onClick = { onLikeClick() }) {
             Icon(
@@ -374,21 +331,11 @@ fun AlbumInfo(
                     model = albumImageUrl,
                     contentDescription = null,
                 )
-//                Image(
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .aspectRatio(1f),
-//                    painter = painterResource(id = coverImageResId),
-//                    contentDescription = "",
-//                )
             },
         )
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            content = {
-                Labels(title = title, author = subTitle, useAnimation = useAnimation)
-            },
-        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Labels(title = title, author = subTitle, useAnimation = useAnimation)
+        }
     }
 }
 

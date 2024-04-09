@@ -13,14 +13,3 @@ data class Song(
     val songUrl: String = "",
     var imageUrl: String = ""
 )
-
-val songs = persistentListOf(
-    Song("1", "Aurora", "All Is Soft Inside"),
-    Song("2", "Aurora", "Queendom"),
-    Song("3", "Aurora", "Gentle Earthquakes"),
-    Song("4", "Aurora", "Awakening"),
-    Song("5", "Aurora", "All Is Soft Inside"),
-    Song("6", "Aurora", "Queendom"),
-    Song("7", "Aurora", "Gentle Earthquakes"),
-    Song("8", "Aurora", "Awakening")
-)

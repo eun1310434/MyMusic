@@ -39,7 +39,7 @@ class SongViewModel @Inject constructor(
     val currentPlaybackFormattedPosition: String
         get() = formatLong(currentPlaybackPosition)
 
-    val currentSongFormattedPosition: String
+    val currentSongDurationFormattedPosition: String
         get() = formatLong(currentSongDuration)
 
 

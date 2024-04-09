@@ -175,7 +175,7 @@ private fun FullScreenMusicPlayerContent(
             dominantColor = dominantColor,
             playbackProgress = sliderProgress,
             currentTime = songViewModel.currentPlaybackFormattedPosition,
-            totalTime = "",
+            totalTime = songViewModel.currentSongDurationFormattedPosition,
             playPauseIcon = iconResId,
             playOrToggleSong = { mainViewModel.playOrToggleSong(song, true) },
             playNextSong = { mainViewModel.skipToNextSong() },
