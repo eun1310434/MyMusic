@@ -19,10 +19,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    @Provides
-    fun provideBooksRef() = Firebase.firestore.collection(BOOKS)
-
     @Singleton
     @Provides
     fun provideMusicServiceConnection(

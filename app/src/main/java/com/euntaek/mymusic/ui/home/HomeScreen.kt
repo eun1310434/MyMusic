@@ -60,8 +60,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.euntaek.mymusic.R
+import com.euntaek.mymusic.data.entities.Album
 import com.euntaek.mymusic.data.entities.Song
 import com.euntaek.mymusic.ui.util.AnimatedText
 import com.euntaek.mymusic.ui.viewmodels.MainViewModel
@@ -70,19 +73,22 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(viewModel: MainViewModel) {
-    MusicList(
-        modifier = Modifier.fillMaxSize(),
-        songs = viewModel.mediaItems.value,
-        onItemClick = { song ->
-            viewModel.playOrToggleSong(song)
-        }
-    )
+    val album by viewModel.album.collectAsStateWithLifecycle()
+
+    album?.let {
+        MusicList(
+            modifier = Modifier.fillMaxSize(),
+            songs = viewModel.mediaItems.value,
+            album = it,
+            onItemClick = viewModel::playOrToggleSong
+        )
+    }
 }
 
 @Composable
 fun MusicList(
     modifier: Modifier = Modifier,
-    title: String = "title",
+    album: Album,
     songs: Resource<List<Song>>,
     onItemClick: (Song) -> Unit,
 ) {
@@ -96,7 +102,7 @@ fun MusicList(
                     .align(Alignment.CenterHorizontally)
                     .alpha(1 - scale)
                     .statusBarsPadding(),
-                title = title,
+                title = album.title,
                 color = MaterialTheme.colorScheme.onSurface,
                 endIconResId = R.drawable.ic_share,
                 onEndIconClick = {}
@@ -105,31 +111,13 @@ fun MusicList(
         albumInfo = { scrollScale ->
             AlbumInfo(
                 modifier = Modifier.fillMaxWidth(),
-                coverImageResId = R.drawable.img_album_01,
+                albumImageUrl = album.imageUrl,
                 imageSize = 200.dp * scrollScale + 100.dp,
-                title = title,
-                author = "headerAuthor",
+                title = album.title,
+                subTitle = album.subTitle,
                 useAnimation = true
             )
         },
-//        songList = { _, lazyListState ->
-//            Box(
-//                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter
-//            ) {
-//                LazyColumn(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(bottom = 60.dp)
-//                        .align(Alignment.TopCenter),
-//                    state = lazyListState,
-//                    userScrollEnabled = false
-//                ) {
-//                    items(songs) { song ->
-//                        MusicListItem(song = song, onClick = onItemClick)
-//                    }
-//                }
-//            }
-//        }
         songList = { _, lazyListState ->
             when (songs) {
                 is Resource.Success -> {
@@ -366,10 +354,10 @@ fun MusicListItem(
 @Composable
 fun AlbumInfo(
     modifier: Modifier,
-    @DrawableRes coverImageResId: Int,
+    albumImageUrl: String,
     imageSize: Dp,
     title: String,
-    author: String,
+    subTitle: String,
     useAnimation: Boolean
 ) {
     Column(modifier = modifier) {
@@ -379,19 +367,26 @@ fun AlbumInfo(
                 .size(imageSize)
                 .clip(RoundedCornerShape(imageSize)),
             content = {
-                Image(
+                AsyncImage(
                     modifier = Modifier
                         .fillMaxSize()
                         .aspectRatio(1f),
-                    painter = painterResource(id = coverImageResId),
-                    contentDescription = "",
+                    model = albumImageUrl,
+                    contentDescription = null,
                 )
+//                Image(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .aspectRatio(1f),
+//                    painter = painterResource(id = coverImageResId),
+//                    contentDescription = "",
+//                )
             },
         )
         Box(
             modifier = Modifier.fillMaxWidth(),
             content = {
-                Labels(title = title, author = author, useAnimation = useAnimation)
+                Labels(title = title, author = subTitle, useAnimation = useAnimation)
             },
         )
     }

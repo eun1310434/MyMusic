@@ -1,5 +1,7 @@
 package com.euntaek.mymusic.ui.viewmodels
 
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
@@ -22,6 +24,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
@@ -31,6 +34,9 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val musicServiceConnection: MusicServiceConnection,
 ) : ViewModel() {
+
+    private val _album = MutableStateFlow<Album?>(null)
+    var album = _album.asStateFlow()
 
     private val _mediaItems = MutableStateFlow<Resource<List<Song>>>(Resource.Loading(null))
     var mediaItems = mutableStateOf<Resource<List<Song>>>(Resource.Loading(null))
@@ -83,6 +89,7 @@ class MainViewModel @Inject constructor(
                     .get()
                     .await()
                     .toObjects(Album::class.java)
+                _album.value = album.firstOrNull()
                 Log.e("Test", "" + album.toString())
 
             } catch (e: Exception) {
