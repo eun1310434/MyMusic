@@ -1,7 +1,7 @@
 package com.euntaek.mymusic.di
 
 import android.content.Context
-import com.euntaek.mymusic.data.remote.MusicDatabase
+import com.euntaek.mymusic.usecase.GetAllSongsUseCase
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -19,7 +19,7 @@ import dagger.hilt.android.scopes.ServiceScoped
 object ServiceModule {
     @ServiceScoped
     @Provides
-    fun provideMusicDatabase() = MusicDatabase()
+    fun provideGetAllSongsUseCase() = GetAllSongsUseCase()
 
     @ServiceScoped
     @Provides

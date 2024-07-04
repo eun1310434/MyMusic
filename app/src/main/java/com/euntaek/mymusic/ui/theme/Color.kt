@@ -1,26 +1,24 @@
 package com.euntaek.mymusic.ui.theme
 
-import androidx.compose.material.darkColors
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.colorResource
+import com.euntaek.mymusic.R
 
 
-/**
- * This is the minimum amount of calculated contrast for a color to be used on top of the
- * surface color. These values are defined within the WCAG AA guidelines, and we use a value of
- * 3:1 which is the minimum for user-interface components.
- */
-const val MinContrastOfPrimaryVsSurface = 3f
-
-val Yellow800 = Color(0xFFF29F05)
-val Red300 = Color(0xFFEA6D7E)
-
-val MyMusicColors = darkColorScheme(
-    primary = Yellow800,
-    onPrimary = Color.Black,
-    primaryContainer = Yellow800,
-    secondary = Yellow800,
-    onSecondary = Color.Black,
-    error = Red300,
-    onError = Color.Black
+@Composable
+fun getColorScheme() = darkColorScheme(
+    primary = colorResource(id = R.color.primary),
+    onPrimary = colorResource(id = R.color.on_primary),
+    secondary = colorResource(id = R.color.secondary),
+    secondaryContainer = colorResource(id = R.color.secondary_container),
+    background = colorResource(id = R.color.background),
+    onBackground = colorResource(id = R.color.on_background),
+    error = colorResource(id = R.color.md_theme_error),
+    onError = colorResource(id = R.color.md_theme_onError),
+    errorContainer = colorResource(id = R.color.md_theme_errorContainer),
+    onErrorContainer = colorResource(id = R.color.md_theme_onErrorContainer),
+    outline = colorResource(id = R.color.secondary),
+    outlineVariant = colorResource(id = R.color.on_primary),
+    scrim = colorResource(id = R.color.md_theme_scrim),
 )

@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">MyMusic</string>
     <string name="connection_error_title">Connection error</string>
     <string name="connection_error_message">Unable to fetch music feeds.\nCheck your internet connection and try again.</string>
     <string name="retry_label">Retry</string>
@@ -21,4 +20,20 @@
     <string name="cd_not_following">Not following</string>
     <string name="notification_channel_name">Music Channel</string>
     <string name="notification_channel_description">Shows the currently playing music</string>
+    <string name="show_less">Show less</string>
+    <string name="show_more">Show more</string>
+    <string name="more">more</string>
+    <string name="about">About</string>
+    <string name="settings">Settings</string>
+    <string name="app_version">App version</string>
+    <string name="update">Update</string>
+    <string name="account">Account</string>
+    <string name="notices">Notices</string>
+    <string name="language">Language</string>
+    <string name="default_system_language">Default System Language</string>
+    <string name="no_account">No account</string>
+    <string name="share">Share</string>
+    <string name="privacy">Privacy</string>
+    <string name="ticket">Ticket</string>
+    <string name="help">Help</string>
 </resources>

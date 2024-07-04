@@ -9,7 +9,7 @@ fun MyMusicTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = MyMusicColors,
+        colorScheme = getColorScheme(),
         typography = MyMusicTypography,
         shapes = MyMusicShapes,
         content = content

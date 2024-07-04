@@ -6,9 +6,11 @@ import androidx.compose.runtime.Stable
 @Stable
 @Immutable
 data class Album(
-    val author: String = "",
     val id: String = "",
-    val imageUrl: String = "",
-    val subTitle: String = "",
-    val title: String = ""
+    val appId: String = "",
+    val albumId: String = "",
+    val artistId: String = "",
+    val description: String = "",
+    val name: String = "",
+    val image: String = ""
 )

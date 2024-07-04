@@ -15,20 +15,25 @@ android {
         applicationId = "com.euntaek.mymusic"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.0.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-//    signingConfigs {
-//        // We use a bundled debug keystore, to allow debug builds from CI to be upgradable
-//        named("debug") {
-//            storeFile = rootProject.file("debug.keystore")
-//            storePassword = "android"
-//            keyAlias = "androiddebugkey"
-//            keyPassword = "android"
-//        }
-//    }
+    // Specifies one flavor dimension.
+    flavorDimensions += "version"
+    productFlavors {
+        create("cartet") {
+            // Assigns this product flavor to the "version" flavor dimension.
+            // If you are using only one dimension, this property is optional,
+            // and the plugin automatically assigns all the module's flavors to
+            // that dimension.
+            dimension = "version"
+            applicationIdSuffix = ".cartet"
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_cartet"
+            manifestPlaceholders["appIconRound"] = "@mipmap/ic_launcher_cartet"
+        }
+    }
 
     buildTypes {
         getByName("debug") {
@@ -73,6 +78,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.junit.ktx)
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -123,6 +130,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewModelCompose)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt.gif)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.glide)
     implementation(libs.hilt.android)
@@ -140,6 +148,8 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.session)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.navigation.compose)
 
-    implementation("androidx.navigation:navigation-compose:2.7.4")// don't upgrade
+    //implementation("androidx.navigation:navigation-compose:2.7.4")// don't upgrade
 }

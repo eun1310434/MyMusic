@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.content.Intent
 import androidx.core.content.ContextCompat
-import com.euntaek.mymusic.data.remote.Constants.NOTIFICATION_ID
+import com.euntaek.mymusic.data.repository.Constants.NOTIFICATION_ID
 import com.euntaek.mymusic.service.MusicService
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 

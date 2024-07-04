@@ -3,10 +3,7 @@ package com.euntaek.mymusic.service
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import android.util.Log
-import com.euntaek.mymusic.data.entities.Album
-import com.euntaek.mymusic.data.entities.Song
-import com.euntaek.mymusic.data.remote.MusicDatabase
+import com.euntaek.mymusic.usecase.GetAllSongsUseCase
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -15,17 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class MusicSource @Inject constructor(
-    private val musicDatabase: MusicDatabase
-) {
-    var album: Album? = null
+class MusicSource @Inject constructor(private val getAllSongsUseCase: GetAllSongsUseCase) {
     var songs = emptyList<MediaMetadataCompat>()
 
     suspend fun fetchMediaData() = withContext(Dispatchers.Main) {
         state = State.STATE_INITIALIZING
         Dispatchers.IO
 
-        val allSongs = musicDatabase.getAllSongs()
+        val allSongs = getAllSongsUseCase()
         songs = allSongs.map { song ->
             MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)

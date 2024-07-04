@@ -7,12 +7,12 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.euntaek.mymusic.data.remote.Constants.NETWORK_FAILURE
+import com.euntaek.mymusic.data.repository.Constants.NETWORK_FAILURE
 import com.euntaek.mymusic.utility.Event
 import com.euntaek.mymusic.utility.Resource
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class MusicServiceConnection(context: Context) {
     private val _isConnected = MutableLiveData<Event<Resource<Boolean>>>()
@@ -24,7 +24,7 @@ class MusicServiceConnection(context: Context) {
     private val _playbackState = MutableLiveData<PlaybackStateCompat?>()
     val playbackState: LiveData<PlaybackStateCompat?> = _playbackState
 
-    var currentPlayingSong = mutableStateOf<MediaMetadataCompat?>(null)
+    var currentPlayingSong = MutableStateFlow<MediaMetadataCompat?>(null)
 
     private val _nowPlaying = MutableLiveData<MediaMetadataCompat?>()
     val nowPlaying: LiveData<MediaMetadataCompat?> = _nowPlaying
@@ -101,7 +101,7 @@ class MusicServiceConnection(context: Context) {
                     Event(
                         Resource.Error(
                             message = "Couldn't connect to the server. Please check your internet connection.",
-                            data =null
+                            data = null
                         )
                     )
                 )

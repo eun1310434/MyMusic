@@ -3,19 +3,14 @@ package com.euntaek.mymusic.service.notification
 import android.net.Uri
 import android.os.Bundle
 import android.os.ResultReceiver
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.euntaek.mymusic.service.MusicSource
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 
-class MusicPlaybackPrepared(
-    private val musicSource: MusicSource,
-    private val playerPrepared: (MediaMetadataCompat?) -> Unit
-) : MediaSessionConnector.PlaybackPreparer {
-
-
-    override fun onCommand(p0: Player, p1: String, p2: Bundle?, p3: ResultReceiver?): Boolean = false
+class MusicPlaybackPrepared(val onPrepareFromMediaId: (mediaId: String) -> Unit) :
+    MediaSessionConnector.PlaybackPreparer {
+    override fun onCommand(p0: Player, p1: String, p2: Bundle?, p3: ResultReceiver?): Boolean =
+        false
 
     override fun getSupportedPrepareActions(): Long {
         return PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID or
@@ -25,10 +20,7 @@ class MusicPlaybackPrepared(
     override fun onPrepare(playWhenReady: Boolean) = Unit
 
     override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
-        musicSource.whenReady {
-            val itemToPlay = musicSource.songs.find { mediaId == it.description.mediaId }
-            playerPrepared(itemToPlay)
-        }
+        onPrepareFromMediaId(mediaId)
     }
 
     override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) = Unit

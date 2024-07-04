@@ -1,134 +1,139 @@
 package com.euntaek.mymusic.ui.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.euntaek.mymusic.data.entities.Song
-import kotlinx.collections.immutable.ImmutableList
 
+object SongListDefaults {
+    val HeaderRoundedCornerSize = 30.dp
+    val HeaderBottomPadding = 5.dp
+    val HeaderElevation = 5.dp
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SongListItem(
-    modifier: Modifier = Modifier,
-    number: Int,
-    author: String = "",
-    title: String,
-    duration: String = "",
-    isLiked: Boolean = true,
-    onLikeClick: (index: Int) -> Unit,
-    onContentClick: (index: Int) -> Unit,
+fun SongList(
+    songs: List<Song>,
+    state: LazyListState = rememberLazyListState(),
+    header: @Composable () -> Unit,
+    onItemClick: (Song) -> Unit
 ) {
-    val likedIcon = rememberVectorPainter(image = Icons.Filled.Favorite)
-    val notLikedIcon = rememberVectorPainter(image = Icons.Outlined.Favorite)
-
-    Row(
+    Box(
         modifier = Modifier
-            .height(80.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(shape = RoundedCornerShape(percent = 50))
-            .clickable { onContentClick(number) },
-        verticalAlignment = Alignment.CenterVertically,
+            .background(MaterialTheme.colorScheme.background)
+            .fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = "$number.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                modifier = Modifier.alpha(0.75f),
-                text = author,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 13.sp,
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = duration,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        IconButton(onClick = { onLikeClick(number - 1) }) {
-            Icon(
-                painter = if (isLiked) likedIcon else notLikedIcon,
-                contentDescription = "",
-                tint = if (isLiked) {
-                    MaterialTheme.colorScheme.secondary
-                } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 60.dp)
+                .align(Alignment.TopCenter),
+            state = state,
+            userScrollEnabled = false
+        ) {
+            stickyHeader {
+                Box(
+                    modifier = Modifier
+                        .shadow(
+                            elevation = SongListDefaults.HeaderElevation,
+                            shape = RoundedCornerShape(
+                                bottomStart = SongListDefaults.HeaderRoundedCornerSize,
+                                bottomEnd = SongListDefaults.HeaderRoundedCornerSize
+                            )
+                        )
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .padding(
+                            start = SongListDefaults.HeaderRoundedCornerSize / 2,
+                            end = SongListDefaults.HeaderRoundedCornerSize / 2,
+                            bottom = SongListDefaults.HeaderBottomPadding,
+                        ),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    header()
                 }
-            )
+            }
+            items(songs) { song ->
+                SongListItem(
+                    title = song.title,
+                    subtitle = song.subtitle,
+                    imageUrl = song.imageUrl,
+                    onContentClick = { onItemClick(song) }
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(40.dp))
+            }
         }
-        Spacer(modifier = Modifier.width(16.dp))
     }
 }
 
 @Composable
-fun SongList(
-    modifier: Modifier = Modifier,
-    items: ImmutableList<Song>,
-    bottomPadding: Dp = 0.dp,
-    scrollState: LazyListState,
-    onLikeClick: (index: Int) -> Unit,
-    onContentClick: (index: Int) -> Unit,
+private fun SongListItem(
+    title: String,
+    subtitle: String,
+    imageUrl: String,
+    onContentClick: () -> Unit
 ) {
-    Box(modifier = modifier) {
-        LazyColumn(
-            userScrollEnabled = false,
-            state = scrollState
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-            itemsIndexed(
-                items = items,
-                key = { _, info -> info.mediaId }
-            ) { index, info ->
-                SongListItem(
-                    number = index + 1,
-                    title = info.title,
-                    onLikeClick = onLikeClick,
-                    onContentClick = onContentClick
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.height(bottomPadding))
-            }
+    Row(
+        modifier = Modifier
+            .height(80.dp)
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(percent = 5))
+            .clickable(onClick = onContentClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Spacer(modifier = Modifier.width(16.dp))
+        Image(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(MaterialTheme.shapes.medium)
+                .align(Alignment.CenterVertically),
+            painter = rememberAsyncImagePainter(imageUrl),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Spacer(modifier = Modifier.width(3.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f),
+            )
         }
+        Spacer(modifier = Modifier.width(16.dp))
     }
 }

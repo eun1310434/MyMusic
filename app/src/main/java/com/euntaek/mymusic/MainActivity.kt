@@ -5,25 +5,35 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.setContent
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.euntaek.mymusic.ui.home.HomeScreen
-import com.euntaek.mymusic.ui.player.SmallMusicPlayer
+import com.euntaek.mymusic.ui.mailbox.MailBoxScreen
 import com.euntaek.mymusic.ui.navigation.Destination
 import com.euntaek.mymusic.ui.player.FullScreenMusicPlayer
+import com.euntaek.mymusic.ui.player.SmallMusicPlayer
+import com.euntaek.mymusic.ui.profile.ProfileDetailScreen
+import com.euntaek.mymusic.ui.profile.ProfileScreen
+import com.euntaek.mymusic.ui.settings.SettingsScreen
 import com.euntaek.mymusic.ui.theme.MyMusicTheme
-import com.euntaek.mymusic.ui.viewmodels.MainViewModel
+import com.euntaek.mymusic.viewmodels.MainViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -38,7 +48,7 @@ class MainActivity : ComponentActivity() {
             MyMusicTheme {
                 MusicPlayerApp(
                     backPressedDispatcher = onBackPressedDispatcher,
-                    startDestination = Destination.home
+                    startDestination = Destination.HOME
                 )
             }
         }
@@ -72,11 +82,12 @@ private class ReleaseTree : Timber.Tree() {
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @ExperimentalMaterialApi
 @Composable
 fun MusicPlayerApp(
     vm: MainViewModel = hiltViewModel(),
-    startDestination: String = Destination.home,
+    startDestination: String = Destination.HOME,
     backPressedDispatcher: OnBackPressedDispatcher
 ) {
     val systemUiController = rememberSystemUiController()
@@ -93,16 +104,58 @@ fun MusicPlayerApp(
     val navController = rememberNavController()
     Box(
         modifier = Modifier
+            .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
     ) {
-        NavHost(navController = navController, startDestination = startDestination) {
-            composable(Destination.home) {
-                HomeScreen(vm)
+        SharedTransitionLayout {
+            NavHost(
+                navController = navController,
+                startDestination = startDestination
+            ) {
+                composable(Destination.HOME) {
+                    HomeScreen(
+                        viewModel = vm,
+                        animatedVisibilityScope = this,
+                        navigateToProfileDetail = { index -> navController.navigate("${Destination.PROFILE_DETAIL}/$index") },
+                        navigateToProfile = { navController.navigate(route = Destination.PROFILE) },
+                        navigateToSettings = { navController.navigate(route = Destination.SETTINGS) },
+                        navigateToMailBox = null // TODO impl, { navController.navigate(route = Destination.MAIL_BOX) }
+                    )
+                }
+                composable(
+                    route = "${Destination.PROFILE_DETAIL}/{artistId}",
+                    arguments = listOf(
+                        navArgument("artistId") {
+                            type = NavType.StringType
+                        }
+                    )
+                ) {
+                    val artistId = it.arguments?.getString("artistId").orEmpty()
+                    ProfileDetailScreen(
+                        viewModel = vm,
+                        animatedVisibilityScope = this,
+                        artistId = artistId
+                    )
+                }
+                composable(Destination.PROFILE) {
+                    ProfileScreen(
+                        viewModel = vm,
+                        animatedVisibilityScope = this
+                    ) { artistId ->
+                        navController.navigate("${Destination.PROFILE_DETAIL}/$artistId")
+                    }
+                }
+                composable(Destination.MAIL_BOX) {
+                    MailBoxScreen(vm, backPressedDispatcher)
+                }
+                composable(Destination.SETTINGS) {
+                    SettingsScreen(vm)
+                }
             }
+            SmallMusicPlayer(modifier = Modifier.align(Alignment.BottomCenter))
+            FullScreenMusicPlayer(
+                backPressedDispatcher = backPressedDispatcher,
+            )
         }
-        SmallMusicPlayer(modifier = Modifier.align(Alignment.BottomCenter))
-        FullScreenMusicPlayer(
-            backPressedDispatcher = backPressedDispatcher,
-        )
     }
 }

@@ -3,26 +3,19 @@ package com.euntaek.mymusic.ui.player
 import android.support.v4.media.MediaMetadataCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -54,7 +47,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,24 +54,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberAsyncImagePainter
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.euntaek.mymusic.R
 import com.euntaek.mymusic.data.entities.Song
-import com.euntaek.mymusic.ui.theme.roundedShape
-import com.euntaek.mymusic.ui.viewmodels.MainViewModel
-import com.euntaek.mymusic.ui.viewmodels.SongViewModel
+import com.euntaek.mymusic.ui.components.CachedAsyncImage
+import com.euntaek.mymusic.utility.formatLong
+import com.euntaek.mymusic.viewmodels.MainViewModel
+import com.euntaek.mymusic.viewmodels.SongViewModel
 
 
 @ExperimentalMaterialApi
@@ -89,20 +83,32 @@ fun FullScreenMusicPlayer(
     viewModel: MainViewModel = hiltViewModel(),
     songViewModel: SongViewModel = hiltViewModel()
 ) {
-    var offsetX by remember { mutableStateOf(0f) }
-    val currentSong = viewModel.currentPlayingSong.value
-    val playbackStateCompat by viewModel.playbackState.observeAsState()
+    val playerBackgroundImage by viewModel.playerBackgroundImage.collectAsStateWithLifecycle()
+    val showPlayerFullScreen by viewModel.isPlayerFullScreenShowing.collectAsStateWithLifecycle()
+    val currentPlaybackPosition by songViewModel.currentPlaybackPosition.collectAsStateWithLifecycle()
+    val currentSong by viewModel.currentPlayingSong.collectAsStateWithLifecycle()
+
+
+    LaunchedEffect("playbackPosition") { songViewModel.updateCurrentPlaybackPosition() }
 
     AnimatedVisibility(
-        visible = currentSong != null && viewModel.showPlayerFullScreen,
+        visible = currentSong != null && showPlayerFullScreen,
         enter = slideInVertically(initialOffsetY = { it }),
         exit = slideOutVertically(targetOffsetY = { it })
     ) {
         FullScreenMusicPlayerContent(
             song = currentSong!!.toSong()!!,
+            backgroundImage = playerBackgroundImage,
             backPressedDispatcher = backPressedDispatcher,
-            mainViewModel = viewModel,
-            songViewModel = songViewModel
+            isSongPlaying = viewModel.songIsPlaying,
+            seekTo = viewModel::seekTo,
+            hideFullScreenPlayer = viewModel::hideFullScreenPlayer,
+            playOrToggleSong = viewModel::playOrToggleSong,
+            playNextSong = viewModel::skipToNextSong,
+            playPreviousSong = viewModel::skipToPreviousSong,
+            currentPlaybackPosition = currentPlaybackPosition,
+            currentPlayerPosition = songViewModel.currentPlayerPosition,
+            currentSongDuration = songViewModel.currentSongDuration
         )
     }
 }
@@ -111,11 +117,11 @@ fun FullScreenMusicPlayer(
 fun MediaMetadataCompat.toSong(): Song? {
     return description?.let {
         Song(
-            it.mediaId ?: "",
-            it.title.toString(),
-            it.subtitle.toString(),
-            it.mediaUri.toString(),
-            it.iconUri.toString()
+            mediaId = it.mediaId ?: "",
+            title = it.title.toString(),
+            subtitle = it.subtitle.toString(),
+            songUrl = it.mediaUri.toString(),
+            imageUrl = it.iconUri.toString()
         )
     }
 }
@@ -125,8 +131,16 @@ fun MediaMetadataCompat.toSong(): Song? {
 private fun FullScreenMusicPlayerContent(
     song: Song,
     backPressedDispatcher: OnBackPressedDispatcher,
-    mainViewModel: MainViewModel,
-    songViewModel: SongViewModel
+    backgroundImage: String?,
+    isSongPlaying: Boolean,
+    hideFullScreenPlayer: () -> Unit,
+    playOrToggleSong: (Song, Boolean) -> Unit,
+    playNextSong: () -> Unit,
+    playPreviousSong: () -> Unit,
+    seekTo: (Float) -> Unit,
+    currentPlaybackPosition: Long,
+    currentSongDuration: Long,
+    currentPlayerPosition: Float
 ) {
     val swappableState = rememberSwipeableState(initialValue = 0)
     val endAnchor = LocalConfiguration.current.screenHeightDp * LocalDensity.current.density
@@ -135,22 +149,14 @@ private fun FullScreenMusicPlayerContent(
     val backCallback = remember {
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                mainViewModel.showPlayerFullScreen = false
+                hideFullScreenPlayer()
             }
         }
     }
 
-    val backgroundColor = MaterialTheme.colorScheme.background
-    val dominantColor by remember { mutableStateOf(backgroundColor) }
-    val imagePainter = rememberAsyncImagePainter(song.imageUrl)
-    val iconResId =
-        if (mainViewModel.songIsPlaying) R.drawable.ic_round_pause else R.drawable.ic_round_play_arrow
-    val isSongPlaying = mainViewModel.songIsPlaying
+    val backgroundColor = MaterialTheme.colorScheme.primaryContainer
     var sliderIsChanging by remember { mutableStateOf(false) }
     var localSliderValue by remember { mutableFloatStateOf(0f) }
-
-    val sliderProgress =
-        if (sliderIsChanging) localSliderValue else songViewModel.currentPlayerPosition
 
     Box(
         modifier = Modifier
@@ -165,47 +171,35 @@ private fun FullScreenMusicPlayerContent(
     ) {
         if (swappableState.currentValue >= 1) {
             LaunchedEffect("key") {
-                mainViewModel.showPlayerFullScreen = false
+                hideFullScreenPlayer()
             }
         }
         FullScreenMusicPlayerContent(
             song = song,
+            backgroundImage = backgroundImage,
             isSongPlaying = isSongPlaying,
-            imagePainter = imagePainter,
-            dominantColor = dominantColor,
-            playbackProgress = sliderProgress,
-            currentTime = songViewModel.currentPlaybackFormattedPosition,
-            totalTime = songViewModel.currentSongDurationFormattedPosition,
-            playPauseIcon = iconResId,
-            playOrToggleSong = { mainViewModel.playOrToggleSong(song, true) },
-            playNextSong = { mainViewModel.skipToNextSong() },
-            playPreviousSong = { mainViewModel.skipToPreviousSong() },
+            playbackProgress = if (sliderIsChanging) localSliderValue else currentPlayerPosition,
+            currentTime = currentPlaybackPosition.formatLong(),
+            totalTime = currentSongDuration.formatLong(),
+            playOrToggleSong = { playOrToggleSong(song, true) },
+            playNextSong = playNextSong,
+            playPreviousSong = playPreviousSong,
             onSliderChange = { newPosition ->
                 localSliderValue = newPosition
                 sliderIsChanging = true
             },
             onSliderChangeFinished = {
-                mainViewModel.seekTo(songViewModel.currentSongDuration * localSliderValue)
+                seekTo(currentSongDuration * localSliderValue)
                 sliderIsChanging = false
             },
             onForward = {
-                songViewModel.currentPlaybackPosition.let { currentPosition ->
-                    mainViewModel.seekTo(currentPosition + 10 * 1000f)
-                }
+                seekTo(currentPlaybackPosition + 10 * 1000f)
             },
             onRewind = {
-                songViewModel.currentPlaybackPosition.let { currentPosition ->
-                    mainViewModel.seekTo(if (currentPosition - 10 * 1000f < 0) 0f else currentPosition - 10 * 1000f)
-                }
+                seekTo(if (currentPlaybackPosition - 10 * 1000f < 0) 0f else currentPlaybackPosition - 10 * 1000f)
             },
-            onClose = {
-                mainViewModel.showPlayerFullScreen = false
-            }
+            onClose = hideFullScreenPlayer
         )
-    }
-
-    LaunchedEffect("playbackPosition") {
-        songViewModel.updateCurrentPlaybackPosition()
     }
 
     DisposableEffect(backPressedDispatcher) {
@@ -213,7 +207,7 @@ private fun FullScreenMusicPlayerContent(
 
         onDispose {
             backCallback.remove()
-            mainViewModel.showPlayerFullScreen = false
+            hideFullScreenPlayer()
         }
     }
 }
@@ -221,13 +215,11 @@ private fun FullScreenMusicPlayerContent(
 @Composable
 private fun FullScreenMusicPlayerContent(
     song: Song,
+    backgroundImage: String?,
     isSongPlaying: Boolean,
-    imagePainter: Painter,
-    dominantColor: Color,
     playbackProgress: Float,
     currentTime: String,
     totalTime: String,
-    @DrawableRes playPauseIcon: Int,
     playOrToggleSong: () -> Unit,
     playNextSong: () -> Unit,
     playPreviousSong: () -> Unit,
@@ -237,39 +229,22 @@ private fun FullScreenMusicPlayerContent(
     onForward: () -> Unit,
     onClose: () -> Unit
 ) {
-    val gradientColors = if (isSystemInDarkTheme()) {
-        listOf(
-            dominantColor,
-            MaterialTheme.colorScheme.background
-        )
-    } else {
-        listOf(
-            MaterialTheme.colorScheme.background,
-            MaterialTheme.colorScheme.background
-        )
-    }
-
-    val sliderColors = if (isSystemInDarkTheme()) {
-        SliderDefaults.colors(
-            thumbColor = MaterialTheme.colorScheme.onBackground,
-            activeTrackColor = MaterialTheme.colorScheme.onBackground,
-            inactiveTrackColor = MaterialTheme.colorScheme.onBackground.copy(
-                //alpha = ProgressIndicatorDefaults.IndicatorBackgroundOpacity
-            ),
-        )
-    } else SliderDefaults.colors(
-        thumbColor = dominantColor,
-        activeTrackColor = dominantColor,
-        inactiveTrackColor = dominantColor.copy(
-            //alpha = ProgressIndicatorDefaults.IndicatorBackgroundOpacity
-        ),
+    val gradientColors = listOf(
+        Color.Transparent,
+        Color.Transparent,
+        MaterialTheme.colorScheme.background
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Surface {
+            if (!backgroundImage.isNullOrEmpty()) {
+                CachedAsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    imageUrl = backgroundImage
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .background(
@@ -282,143 +257,37 @@ private fun FullScreenMusicPlayerContent(
                     .systemBarsPadding()
             ) {
                 Column {
-                    IconButton(
-                        onClick = onClose
-                    ) {
+                    IconButton(onClick = onClose) {
                         Image(
                             imageVector = Icons.Rounded.KeyboardArrowDown,
                             contentDescription = "Close",
                             colorFilter = ColorFilter.tint(LocalContentColor.current)
                         )
                     }
-                    Column(
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .padding(vertical = 32.dp)
-                                .clip(MaterialTheme.shapes.medium)
-                                .weight(1f, fill = false)
-                                .aspectRatio(1f)
-
-                        ) {
-                            VinylAnimation(painter = imagePainter, isSongPlaying = isSongPlaying)
-                        }
-
-                        Text(
-                            text = song.title,
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-
-                        Text(
-                            song.subtitle,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.graphicsLayer {
-                                alpha = 0.60f
-                            }
-                        )
-
-                        Column(
+                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        Spacer(modifier = Modifier.fillMaxHeight(0.6f))
+                        PlayerTitle(title = song.title, subtitle = song.subtitle)
+                        PlayerSlider(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 24.dp)
-                        ) {
-                            Slider(
-                                value = playbackProgress,
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                colors = sliderColors,
-                                onValueChange = onSliderChange,
-                                onValueChangeFinished = onSliderChangeFinished
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-                                    Text(
-                                        text = currentTime,
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
-                                CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-                                    Text(
-                                        text = totalTime,
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
-                            }
-                        }
-
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceAround,
-                            verticalAlignment = Alignment.CenterVertically,
+                                .padding(vertical = 24.dp),
+                            playbackProgress = playbackProgress,
+                            currentTime = currentTime,
+                            totalTime = totalTime,
+                            onSliderChange = onSliderChange,
+                            onSliderChangeFinished = onSliderChangeFinished
+                        )
+                        PlayerControlButtons(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.SkipPrevious,
-                                tint = MaterialTheme.colorScheme.onBackground,
-                                contentDescription = "Skip Previous",
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable(onClick = playPreviousSong)
-                                    .padding(12.dp)
-                                    .size(32.dp)
-                            )
-                            Icon(
-                                imageVector = Icons.Rounded.Replay10,
-                                tint = MaterialTheme.colorScheme.onBackground,
-                                contentDescription = "Replay 10 seconds",
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable(onClick = onRewind)
-                                    .padding(12.dp)
-                                    .size(32.dp)
-                            )
-                            Icon(
-                                painter = painterResource(playPauseIcon),
-                                contentDescription = "Play",
-                                tint = MaterialTheme.colorScheme.background,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.onBackground)
-                                    .clickable(onClick = playOrToggleSong)
-                                    .size(64.dp)
-                                    .padding(8.dp)
-                            )
-                            Icon(
-                                imageVector = Icons.Rounded.Forward10,
-                                tint = MaterialTheme.colorScheme.onBackground,
-                                contentDescription = "Forward 10 seconds",
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable(onClick = onForward)
-                                    .padding(12.dp)
-                                    .size(32.dp)
-                            )
-                            Icon(
-                                imageVector = Icons.Rounded.SkipNext,
-                                tint = MaterialTheme.colorScheme.onBackground,
-                                contentDescription = "Skip Next",
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable(onClick = playNextSong)
-                                    .padding(12.dp)
-                                    .size(32.dp)
-                            )
-                        }
+                            isSongPlaying = isSongPlaying,
+                            playOrToggleSong = playOrToggleSong,
+                            playNextSong = playNextSong,
+                            playPreviousSong = playPreviousSong,
+                            onRewind = onRewind,
+                            onForward = onForward
+                        )
                     }
                 }
             }
@@ -427,74 +296,158 @@ private fun FullScreenMusicPlayerContent(
 }
 
 @Composable
-private fun Vinyl(
-    modifier: Modifier = Modifier,
-    rotationDegrees: Float = 0f,
-    painter: Painter?
-) {
-    Box(
-        modifier = modifier
-            .aspectRatio(1.0f)
-            .clip(roundedShape)
-    ) {
-        // Vinyl background
-        Image(
-            modifier = Modifier
-                .fillMaxSize()
-                .rotate(rotationDegrees),
-            painter = painterResource(id = R.drawable.vinyl_background),
-            contentDescription = null
-        )
+private fun PlayerTitle(title: String, subtitle: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.headlineMedium,
+        color = MaterialTheme.colorScheme.onBackground,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
 
-        // Vinyl song cover
-        if (painter != null) {
-            Image(
-                modifier = Modifier
-                    .fillMaxSize(0.5f)
-                    .rotate(rotationDegrees)
-                    .aspectRatio(1.0f)
-                    .align(Alignment.Center)
-                    .clip(roundedShape),
-                painter = painter,
-                contentDescription = null
-            )
+    Text(
+        text = subtitle,
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.60f),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
+}
+
+@Composable
+private fun PlayerSlider(
+    modifier: Modifier,
+    playbackProgress: Float,
+    currentTime: String,
+    totalTime: String,
+    onSliderChange: (Float) -> Unit,
+    onSliderChangeFinished: () -> Unit,
+) {
+    val sliderColors = SliderDefaults.colors(
+        thumbColor = MaterialTheme.colorScheme.onBackground,
+        activeTrackColor = MaterialTheme.colorScheme.onBackground,
+        inactiveTrackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.24f)
+    )
+
+    Column(modifier = modifier) {
+        Slider(
+            value = playbackProgress,
+            modifier = Modifier
+                .fillMaxWidth(),
+            colors = sliderColors,
+            onValueChange = onSliderChange,
+            onValueChangeFinished = onSliderChangeFinished
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                Text(
+                    text = currentTime,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                Text(
+                    text = totalTime,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
 
 @Composable
-fun VinylAnimation(
-    isSongPlaying: Boolean = true,
-    painter: Painter?
+private fun PlayerControlButtons(
+    modifier: Modifier,
+    isSongPlaying: Boolean,
+    color: Color = MaterialTheme.colorScheme.onBackground,
+    playOrToggleSong: () -> Unit,
+    playNextSong: () -> Unit,
+    playPreviousSong: () -> Unit,
+    onRewind: () -> Unit,
+    onForward: () -> Unit
 ) {
-    var currentRotation by remember { mutableFloatStateOf(0f) }
-    val rotation = remember { Animatable(currentRotation) }
-
-    LaunchedEffect(isSongPlaying) {
-        if (isSongPlaying) {
-            rotation.animateTo(
-                targetValue = currentRotation + 360f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(3000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart
-                ),
-                block = { currentRotation = value }
-            )
-        } else {
-            if (currentRotation > 0f) {
-                rotation.animateTo(
-                    targetValue = currentRotation + 50,
-                    animationSpec = tween(
-                        delayMillis = 1250,
-                        easing = LinearOutSlowInEasing
-                    ),
-                    block = { currentRotation = value }
-                )
-            }
-        }
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PlayIconButton(
+            imageVector = Icons.Rounded.SkipPrevious,
+            color = color,
+            contentDescription = "Skip Previous",
+            onClick = playPreviousSong
+        )
+        PlayIconButton(
+            imageVector = Icons.Rounded.Replay10,
+            color = color,
+            contentDescription = "Replay 10 seconds",
+            onClick = onRewind
+        )
+        PlayToggleIconButton(
+            isPlaying = isSongPlaying,
+            playOrToggleSong = playOrToggleSong
+        )
+        PlayIconButton(
+            imageVector = Icons.Rounded.Forward10,
+            color = color,
+            contentDescription = "Forward 10 seconds",
+            onClick = onForward
+        )
+        PlayIconButton(
+            imageVector = Icons.Rounded.SkipNext,
+            color = color,
+            contentDescription = "Skip Next",
+            onClick = playNextSong
+        )
     }
+}
 
-    Vinyl(painter = painter, rotationDegrees = rotation.value)
+@Composable
+private fun PlayToggleIconButton(
+    size: Dp = 64.dp,
+    shape: Shape = CircleShape,
+    backgroundColor: Color = MaterialTheme.colorScheme.onBackground,
+    isPlaying: Boolean,
+    playOrToggleSong: () -> Unit,
+) {
+    val playPauseIcon =
+        if (isPlaying) R.drawable.ic_round_pause else R.drawable.ic_round_play_arrow
+
+    Icon(
+        painter = painterResource(playPauseIcon),
+        contentDescription = "Play",
+        tint = MaterialTheme.colorScheme.background,
+        modifier = Modifier
+            .clip(shape)
+            .background(backgroundColor)
+            .clickable(onClick = playOrToggleSong)
+            .size(size)
+            .padding(8.dp)
+    )
 }
 
 
+@Composable
+private fun PlayIconButton(
+    imageVector: ImageVector,
+    color: Color,
+    contentDescription: String?,
+    onClick: () -> Unit
+) {
+    Icon(
+        imageVector = imageVector,
+        tint = color,
+        contentDescription = contentDescription,
+        modifier = Modifier
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
+            .padding(12.dp)
+            .size(32.dp)
+    )
+}
