@@ -1,60 +1,67 @@
 package com.euntaek.mymusic.service
 
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
+import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.euntaek.mymusic.data.repository.Constants.MEDIA_ROOT_ID
 import com.euntaek.mymusic.data.repository.Constants.NETWORK_FAILURE
+import com.euntaek.mymusic.data.repository.Constants.NOTIFICATION_ID
 import com.euntaek.mymusic.data.repository.Constants.SERVICE_TAG
-import com.euntaek.mymusic.service.notification.MusicNotificationManger
-import com.euntaek.mymusic.service.notification.MusicPlaybackPrepared
-import com.euntaek.mymusic.service.notification.MusicPlayerEventListener
-import com.euntaek.mymusic.service.notification.MusicPlayerNotificationListener
+import com.euntaek.mymusic.usecase.GetAllSongsUseCase
+import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
+import com.google.android.exoplayer2.source.ConcatenatingMediaSource
+import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.Util
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MusicService : MediaBrowserServiceCompat() {
-
-    @Inject
-    lateinit var dataSourceFactory: DefaultDataSourceFactory
-
     @Inject
     lateinit var exoPlayer: SimpleExoPlayer
 
     @Inject
-    lateinit var musicSource: MusicSource
+    lateinit var getAllSongsUseCase: GetAllSongsUseCase
 
     private lateinit var musicNotificationManger: MusicNotificationManger
+
+    private var _songs = MutableStateFlow(emptyList<MediaMetadataCompat>())
 
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
     private lateinit var mediaSessionCompat: MediaSessionCompat
-    private lateinit var mediaSessionConnector: MediaSessionConnector
 
-    var isForegroundService = false
+    private var isForegroundService = false
 
     private var currentPlayingSong: MediaMetadataCompat? = null
 
     private var isPlayerInitialize = false
 
-    private lateinit var musicPlayerListener: MusicPlayerEventListener
+    private lateinit var musicPlayerListener: Player.Listener
 
     companion object {
         var currentSongDuration = 0L
@@ -63,15 +70,81 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onCreate() {
         super.onCreate()
-        serviceScope.launch { musicSource.fetchMediaData() }
+        serviceScope.launch { fetchMediaData() }
         setMediaSessionCompat()
-        setMusicNotificationManger()
-        setMediaSessionConnector()
+
+        //Set MusicNotificationManager
+        musicNotificationManger = MusicNotificationManger(
+            context = this,
+            player = exoPlayer,
+            sessionToken = mediaSessionCompat.sessionToken,
+            onCancelled = { _, _ ->
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                isForegroundService = false
+                stopSelf()
+            },
+            onPosted = { _, notification, ongoing ->
+                if (ongoing && !isForegroundService) {
+                    ContextCompat.startForegroundService(
+                        this,
+                        Intent(applicationContext, this::class.java)
+                    )
+                    startForeground(NOTIFICATION_ID, notification)
+                    isForegroundService = true
+                }
+                currentSongDuration = exoPlayer.duration
+            }
+        )
+
+        setMediaSessionConnector(
+            player = exoPlayer,
+            mediaSessionCompat = mediaSessionCompat,
+            onPrepareFromMediaId = { mediaId ->
+                currentPlayingSong = _songs.value.find { mediaId == it.description.mediaId }
+                preparePlayer(
+                    songs = _songs.value,
+                    itemToPlay = currentPlayingSong,
+                    playNow = true
+                )
+            },
+            setMediaDescription = { windowIndex ->
+                _songs.value[windowIndex].description
+            }
+        )
+
         setMusicPlayerEventListener()
     }
 
+
+    private suspend fun fetchMediaData() {
+        _songs.update {
+            getAllSongsUseCase().map { song ->
+                MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
+                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, song.title)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.subtitle)
+                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, song.subtitle)
+                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.mediaId)
+                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, song.songUrl)
+                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, song.imageUrl)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, song.imageUrl)
+                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, song.subtitle)
+                    .build()
+            }
+        }
+    }
+
+
     private fun setMusicPlayerEventListener() {
-        musicPlayerListener = MusicPlayerEventListener(this)
+        musicPlayerListener = object : Player.Listener {
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                super.onPlayWhenReadyChanged(playWhenReady, reason)
+                if (reason == Player.STATE_READY && !playWhenReady) {
+                    stopForeground(STOP_FOREGROUND_DETACH)
+                }
+            }
+        }
+
         exoPlayer.addListener(musicPlayerListener)
     }
 
@@ -88,39 +161,21 @@ class MusicService : MediaBrowserServiceCompat() {
         sessionToken = mediaSessionCompat.sessionToken
     }
 
-    private fun setMediaSessionConnector() {
-        val musicPlaybackPreparer = MusicPlaybackPrepared { mediaId ->
-            musicSource.whenReady {
-                currentPlayingSong = musicSource.songs.find { mediaId == it.description.mediaId }
-                preparePlayer(
-                    songs = musicSource.songs,
-                    itemToPlay = currentPlayingSong,
-                    playNow = true
-                )
-            }
-        }
-        mediaSessionConnector = MediaSessionConnector(mediaSessionCompat)
-        mediaSessionConnector.setPlaybackPreparer(musicPlaybackPreparer)
-        mediaSessionConnector.setQueueNavigator(MusicQueueNavigator())
-        mediaSessionConnector.setPlayer(exoPlayer)
-    }
-
-    private fun setMusicNotificationManger() {
-        musicNotificationManger = MusicNotificationManger(
-            context = this,
-            sessionToken = mediaSessionCompat.sessionToken,
-            notificationListener = MusicPlayerNotificationListener(this)
-        ) {
-            currentSongDuration = exoPlayer.duration
-        }
-        musicNotificationManger.showNotification(exoPlayer)
-    }
-
-
-    private inner class MusicQueueNavigator : TimelineQueueNavigator(mediaSessionCompat) {
-        override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
-            return musicSource.songs[windowIndex].description
-        }
+    private fun setMediaSessionConnector(
+        player: Player,
+        mediaSessionCompat: MediaSessionCompat,
+        onPrepareFromMediaId: (mediaId: String) -> Unit,
+        setMediaDescription: (Int) -> MediaDescriptionCompat
+    ) {
+        val mediaSessionConnector = MediaSessionConnector(mediaSessionCompat)
+        mediaSessionConnector.setPlaybackPreparer(MusicPlaybackPrepared(onPrepareFromMediaId))
+        mediaSessionConnector.setQueueNavigator(
+            MusicQueueNavigator(
+                mediaSessionCompat = mediaSessionCompat,
+                setMediaDescription = setMediaDescription
+            )
+        )
+        mediaSessionConnector.setPlayer(player)
     }
 
     private fun preparePlayer(
@@ -129,7 +184,7 @@ class MusicService : MediaBrowserServiceCompat() {
         playNow: Boolean
     ) {
         val curSongIndex = if (currentPlayingSong == null) 0 else songs.indexOf(itemToPlay)
-        exoPlayer.setMediaSource(musicSource.asMediaSource(dataSourceFactory))
+        exoPlayer.setMediaSource(songs.getMediaSource(this))
         exoPlayer.prepare()
         exoPlayer.seekTo(curSongIndex, 0L)
         exoPlayer.playWhenReady = playNow
@@ -159,24 +214,72 @@ class MusicService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        when (parentId) {
-            MEDIA_ROOT_ID -> {
-                val resultsSent = musicSource.whenReady { isInitialized ->
-                    if (isInitialized) {
-                        result.sendResult(musicSource.asMediaItems())
-                        if (!isPlayerInitialize && musicSource.songs.isNotEmpty()) {
-                            preparePlayer(musicSource.songs, musicSource.songs[0], false)
-                            isPlayerInitialize = true
-                        }
-                    } else {
-                        mediaSessionCompat.sendSessionEvent(NETWORK_FAILURE, null)
-                        result.sendResult(null)
-                    }
-                }
-                if (!resultsSent) {
-                    result.detach()
-                }
-            }
+        if (parentId == MEDIA_ROOT_ID) {
+            mediaSessionCompat.sendSessionEvent(NETWORK_FAILURE, null)
+            result.sendResult(null)
         }
     }
+}
+
+fun List<MediaMetadataCompat>.asMediaItems() = this.map { song ->
+    val desc = MediaDescriptionCompat.Builder()
+        .setMediaUri(song.description.mediaUri)
+        .setTitle(song.description.title)
+        .setSubtitle(song.description.subtitle)
+        .setMediaId(song.description.mediaId)
+        .setIconUri(song.description.iconUri)
+        .build()
+
+    MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
+}.toMutableList()
+
+
+private fun List<MediaMetadataCompat>.getMediaSource(
+    context: Context
+): MediaSource {
+    val userAgent = Util.getUserAgent(context, "MyMusic")
+    val dataSourceFactory = DefaultDataSourceFactory(context, userAgent)
+    val concatenatingMediaSource = ConcatenatingMediaSource()
+
+    this.forEach { song ->
+        val songUri = song.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)
+        val mediaItem = MediaItem.fromUri(songUri)
+        val mediaSource = ProgressiveMediaSource
+            .Factory(dataSourceFactory)
+            .createMediaSource(mediaItem)
+        concatenatingMediaSource.addMediaSource(mediaSource)
+    }
+
+    return concatenatingMediaSource
+}
+
+private class MusicQueueNavigator(
+    mediaSessionCompat: MediaSessionCompat,
+    val setMediaDescription: (Int) -> MediaDescriptionCompat
+) : TimelineQueueNavigator(mediaSessionCompat) {
+    override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
+        return setMediaDescription(windowIndex)
+    }
+}
+
+private class MusicPlaybackPrepared(val onPrepareFromMediaId: (mediaId: String) -> Unit) :
+    MediaSessionConnector.PlaybackPreparer {
+    override fun onCommand(p0: Player, p1: String, p2: Bundle?, p3: ResultReceiver?): Boolean =
+        false
+
+    override fun getSupportedPrepareActions(): Long {
+        return PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID or
+                PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID
+    }
+
+    override fun onPrepare(playWhenReady: Boolean) = Unit
+
+    override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
+        onPrepareFromMediaId(mediaId)
+    }
+
+    override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) =
+        Unit
+
+    override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) = Unit
 }
