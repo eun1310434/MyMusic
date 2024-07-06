@@ -13,7 +13,8 @@ import coil.request.ImageRequest
 fun CachedAsyncImage(
     modifier: Modifier,
     contentScale: ContentScale = ContentScale.Fit,
-    imageUrl: String
+    imageUrl: String,
+    isGIF: Boolean = false,
 ) {
     val context = LocalContext.current
 
@@ -23,7 +24,9 @@ fun CachedAsyncImage(
         .diskCachePolicy(CachePolicy.ENABLED)
         .memoryCacheKey(imageUrl)
         .memoryCachePolicy(CachePolicy.ENABLED)
-        .decoderFactory(ImageDecoderDecoder.Factory()) //GIF
+        .apply {
+            if (isGIF) this.decoderFactory(ImageDecoderDecoder.Factory()) //GIF
+        }
         .build()
 
     AsyncImage(

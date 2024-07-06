@@ -241,7 +241,8 @@ private fun FullScreenMusicPlayerContent(
                 CachedAsyncImage(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
-                    imageUrl = backgroundImage
+                    imageUrl = backgroundImage,
+                    isGIF = true
                 )
             }
 
