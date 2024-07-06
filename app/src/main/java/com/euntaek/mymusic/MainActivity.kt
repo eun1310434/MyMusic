@@ -1,7 +1,6 @@
 package com.euntaek.mymusic
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.setContent
@@ -36,47 +35,18 @@ import com.euntaek.mymusic.ui.theme.MyMusicTheme
 import com.euntaek.mymusic.viewmodels.MainViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @ExperimentalMaterialApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initTimber()
         setContent {
             MyMusicTheme {
                 MusicPlayerApp(
                     backPressedDispatcher = onBackPressedDispatcher,
                     startDestination = Destination.HOME
                 )
-            }
-        }
-    }
-
-    private fun initTimber() {
-        if (BuildConfig.DEBUG) {
-            Timber.plant(object : Timber.DebugTree() {
-                override fun createStackElementTag(element: StackTraceElement): String? {
-                    return super.createStackElementTag(element) + ':' + element.lineNumber
-                }
-            })
-        } else {
-            Timber.plant(ReleaseTree())
-        }
-    }
-}
-
-
-private class ReleaseTree : Timber.Tree() {
-    override fun isLoggable(tag: String?, priority: Int): Boolean {
-        return !(priority == Log.VERBOSE || priority == Log.DEBUG || priority == Log.INFO)
-    }
-
-    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        if (isLoggable(tag, priority)) {
-            if (priority == Log.ERROR && t != null) {
-                //You can save the Error log.
             }
         }
     }

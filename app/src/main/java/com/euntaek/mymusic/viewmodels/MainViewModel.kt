@@ -1,6 +1,5 @@
 package com.euntaek.mymusic.viewmodels
 
-import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,9 +9,7 @@ import com.euntaek.mymusic.data.entities.AppInfo
 import com.euntaek.mymusic.data.entities.Artist
 import com.euntaek.mymusic.data.entities.Song
 import com.euntaek.mymusic.data.repository.Constants
-import com.euntaek.mymusic.data.repository.Constants.MEDIA_ROOT_ID
 import com.euntaek.mymusic.service.MusicServiceConnection
-import com.euntaek.mymusic.ui.player.toSong
 import com.euntaek.mymusic.utility.isPlayEnabled
 import com.euntaek.mymusic.utility.isPlaying
 import com.euntaek.mymusic.utility.isPrepared
@@ -84,26 +81,6 @@ class MainViewModel @Inject constructor(
                 _playerBackgroundImage.value = _appInfo.value?.playerGifs?.random()
             }
         }
-
-        musicServiceConnection.subscribe(
-            MEDIA_ROOT_ID,
-            object : MediaBrowserCompat.SubscriptionCallback() {
-                override fun onChildrenLoaded(
-                    parentId: String,
-                    children: MutableList<MediaBrowserCompat.MediaItem>
-                ) {
-                    super.onChildrenLoaded(parentId, children)
-                    val items = children.map {
-                        Song(
-                            mediaId = it.mediaId!!,
-                            title = it.description.title.toString(),
-                            subtitle = it.description.subtitle.toString(),
-                            songUrl = it.description.mediaUri.toString(),
-                            imageUrl = it.description.iconUri.toString()
-                        )
-                    }
-                }
-            })
 
         getSongsInfo(appId = App.appId)
         getAlbumInfo(appId = App.appId)
@@ -184,10 +161,10 @@ class MainViewModel @Inject constructor(
         musicServiceConnection.transportController.seekTo(pos.toLong())
     }
 
-    fun playOrToggleCurrentSong() {
-        val currentSong = currentPlayingSong.value?.toSong()
-        if (currentSong != null) {
-            playOrToggleSong(mediaItem = currentSong, toggle = true)
+    fun prepareFirstSong() {
+        val firstSong = _songs.value?.firstOrNull()
+        if (firstSong != null) {
+            musicServiceConnection.setCurrentPlayingSong(firstSong)
         }
     }
 
@@ -212,12 +189,5 @@ class MainViewModel @Inject constructor(
         } else {
             musicServiceConnection.transportController.playFromMediaId(mediaItem.mediaId, null)
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        musicServiceConnection.unsubscribe(
-            MEDIA_ROOT_ID,
-            object : MediaBrowserCompat.SubscriptionCallback() {})
     }
 }

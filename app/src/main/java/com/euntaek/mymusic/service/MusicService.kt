@@ -18,6 +18,7 @@ import com.euntaek.mymusic.data.repository.Constants.NETWORK_FAILURE
 import com.euntaek.mymusic.data.repository.Constants.NOTIFICATION_ID
 import com.euntaek.mymusic.data.repository.Constants.SERVICE_TAG
 import com.euntaek.mymusic.usecase.GetAllSongsUseCase
+import com.euntaek.mymusic.utility.toMediaMetadata
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -70,6 +71,7 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onCreate() {
         super.onCreate()
+
         serviceScope.launch { fetchMediaData() }
         setMediaSessionCompat()
 
@@ -99,7 +101,7 @@ class MusicService : MediaBrowserServiceCompat() {
         setMediaSessionConnector(
             player = exoPlayer,
             mediaSessionCompat = mediaSessionCompat,
-            onPrepareFromMediaId = { mediaId ->
+            onPrepareFromMediaId = { mediaId, playWhenReady ->
                 currentPlayingSong = _songs.value.find { mediaId == it.description.mediaId }
                 preparePlayer(
                     songs = _songs.value,
@@ -117,21 +119,7 @@ class MusicService : MediaBrowserServiceCompat() {
 
 
     private suspend fun fetchMediaData() {
-        _songs.update {
-            getAllSongsUseCase().map { song ->
-                MediaMetadataCompat.Builder()
-                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
-                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, song.title)
-                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.subtitle)
-                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, song.subtitle)
-                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.mediaId)
-                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, song.songUrl)
-                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, song.imageUrl)
-                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, song.imageUrl)
-                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, song.subtitle)
-                    .build()
-            }
-        }
+        _songs.update { getAllSongsUseCase().map { it.toMediaMetadata() } }
     }
 
 
@@ -164,7 +152,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private fun setMediaSessionConnector(
         player: Player,
         mediaSessionCompat: MediaSessionCompat,
-        onPrepareFromMediaId: (mediaId: String) -> Unit,
+        onPrepareFromMediaId: (mediaId: String, playWhenReady: Boolean) -> Unit,
         setMediaDescription: (Int) -> MediaDescriptionCompat
     ) {
         val mediaSessionConnector = MediaSessionConnector(mediaSessionCompat)
@@ -262,24 +250,27 @@ private class MusicQueueNavigator(
     }
 }
 
-private class MusicPlaybackPrepared(val onPrepareFromMediaId: (mediaId: String) -> Unit) :
+private class MusicPlaybackPrepared(val onPrepareFromMediaId: (String, Boolean) -> Unit) :
     MediaSessionConnector.PlaybackPreparer {
-    override fun onCommand(p0: Player, p1: String, p2: Bundle?, p3: ResultReceiver?): Boolean =
-        false
+    override fun onCommand(p0: Player, p1: String, p2: Bundle?, p3: ResultReceiver?): Boolean {
+        return false
+    }
 
     override fun getSupportedPrepareActions(): Long {
         return PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID or
                 PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID
     }
 
-    override fun onPrepare(playWhenReady: Boolean) = Unit
-
-    override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
-        onPrepareFromMediaId(mediaId)
+    override fun onPrepare(playWhenReady: Boolean) {
     }
 
-    override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) =
-        Unit
+    override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
+        onPrepareFromMediaId(mediaId, playWhenReady)
+    }
 
-    override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) = Unit
+    override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) {
+    }
+
+    override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) {
+    }
 }

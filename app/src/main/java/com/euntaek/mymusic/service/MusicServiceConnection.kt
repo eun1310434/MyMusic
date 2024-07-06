@@ -6,20 +6,21 @@ import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.euntaek.mymusic.data.entities.Song
 import com.euntaek.mymusic.data.repository.Constants.NETWORK_FAILURE
 import com.euntaek.mymusic.utility.Event
 import com.euntaek.mymusic.utility.Resource
+import com.euntaek.mymusic.utility.toMediaMetadata
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class MusicServiceConnection(context: Context) {
     private val _isConnected = MutableLiveData<Event<Resource<Boolean>>>()
-    val isConnected: LiveData<Event<Resource<Boolean>>> = _isConnected
 
     private val _networkFailure = MutableLiveData<Event<Resource<Boolean>>>()
-    val networkFailure: LiveData<Event<Resource<Boolean>>> = _networkFailure
 
     private val _playbackState = MutableLiveData<PlaybackStateCompat?>()
     val playbackState: LiveData<PlaybackStateCompat?> = _playbackState
@@ -27,7 +28,6 @@ class MusicServiceConnection(context: Context) {
     var currentPlayingSong = MutableStateFlow<MediaMetadataCompat?>(null)
 
     private val _nowPlaying = MutableLiveData<MediaMetadataCompat?>()
-    val nowPlaying: LiveData<MediaMetadataCompat?> = _nowPlaying
 
     private lateinit var mediaController: MediaControllerCompat
 
@@ -42,14 +42,6 @@ class MusicServiceConnection(context: Context) {
         null
     ).apply { connect() }
 
-    fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
-        mediaBrowser.subscribe(parentId, callback)
-    }
-
-    fun unsubscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
-        mediaBrowser.unsubscribe(parentId, callback)
-    }
-
     private inner class MediaBrowserConnectionCallback(
         private val context: Context
     ) : MediaBrowserCompat.ConnectionCallback() {
@@ -58,6 +50,7 @@ class MusicServiceConnection(context: Context) {
             mediaController = MediaControllerCompat(context, mediaBrowser.sessionToken)
                 .apply { registerCallback(MediaControllerCallback()) }
             _isConnected.postValue(Event(Resource.Success(true)))
+            mediaController.transportControls.play()
         }
 
         override fun onConnectionSuspended() {
@@ -83,7 +76,20 @@ class MusicServiceConnection(context: Context) {
         }
     }
 
+    fun setCurrentPlayingSong(song: Song) {
+        currentPlayingSong.value = song.toMediaMetadata()
+    }
+
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
+        override fun onSessionReady() {
+            super.onSessionReady()
+            mediaController.transportControls.prepare()
+        }
+
+        override fun onQueueChanged(queue: MutableList<MediaSessionCompat.QueueItem>?) {
+            super.onQueueChanged(queue)
+        }
+
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             _playbackState.postValue(state)
         }

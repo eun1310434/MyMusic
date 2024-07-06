@@ -33,7 +33,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,9 +66,15 @@ fun SmallMusicPlayer(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
+    val songs by viewModel.songs.collectAsStateWithLifecycle()
     val currentSong by viewModel.currentPlayingSong.collectAsStateWithLifecycle()
     val playbackStateCompat by viewModel.playbackState.observeAsState()
     val backgroundColor = MaterialTheme.colorScheme.secondaryContainer
+    LaunchedEffect(key1 = currentSong, key2 = songs) {
+        if (currentSong == null) {
+            viewModel.prepareFirstSong()
+        }
+    }
 
     AnimatedVisibility(
         modifier = modifier,
