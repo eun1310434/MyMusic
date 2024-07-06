@@ -60,8 +60,6 @@ class MusicService : MediaBrowserServiceCompat() {
 
     private var currentPlayingSong: MediaMetadataCompat? = null
 
-    private var isPlayerInitialize = false
-
     private lateinit var musicPlayerListener: Player.Listener
 
     companion object {
@@ -101,7 +99,7 @@ class MusicService : MediaBrowserServiceCompat() {
         setMediaSessionConnector(
             player = exoPlayer,
             mediaSessionCompat = mediaSessionCompat,
-            onPrepareFromMediaId = { mediaId, playWhenReady ->
+            onPrepareFromMediaId = { mediaId, _ ->
                 currentPlayingSong = _songs.value.find { mediaId == it.description.mediaId }
                 preparePlayer(
                     songs = _songs.value,
@@ -208,19 +206,6 @@ class MusicService : MediaBrowserServiceCompat() {
         }
     }
 }
-
-fun List<MediaMetadataCompat>.asMediaItems() = this.map { song ->
-    val desc = MediaDescriptionCompat.Builder()
-        .setMediaUri(song.description.mediaUri)
-        .setTitle(song.description.title)
-        .setSubtitle(song.description.subtitle)
-        .setMediaId(song.description.mediaId)
-        .setIconUri(song.description.iconUri)
-        .build()
-
-    MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
-}.toMutableList()
-
 
 private fun List<MediaMetadataCompat>.getMediaSource(
     context: Context

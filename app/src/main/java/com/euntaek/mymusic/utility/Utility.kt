@@ -22,3 +22,4 @@ fun Song.toMediaMetadata(): MediaMetadataCompat = MediaMetadataCompat.Builder()
     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, this.imageUrl)
     .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, this.subtitle)
     .build()
+

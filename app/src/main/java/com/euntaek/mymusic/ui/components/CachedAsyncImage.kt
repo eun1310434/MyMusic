@@ -19,11 +19,11 @@ fun CachedAsyncImage(
 
     val imageRequest = ImageRequest.Builder(context)
         .data(imageUrl)
-        .memoryCacheKey(imageUrl)
         .diskCacheKey(imageUrl)
         .diskCachePolicy(CachePolicy.ENABLED)
+        .memoryCacheKey(imageUrl)
         .memoryCachePolicy(CachePolicy.ENABLED)
-        .decoderFactory(ImageDecoderDecoder.Factory())
+        .decoderFactory(ImageDecoderDecoder.Factory()) //GIF
         .build()
 
     AsyncImage(

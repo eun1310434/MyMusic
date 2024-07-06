@@ -5,10 +5,15 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
+import coil.Coil.imageLoader
+import coil.request.CachePolicy
+import coil.request.ImageRequest
+import coil.util.DebugLogger
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -17,6 +22,7 @@ import com.euntaek.mymusic.data.repository.Constants.NOTIFICATION_CHANNEL_ID
 import com.euntaek.mymusic.data.repository.Constants.NOTIFICATION_ID
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
+import timber.log.Timber
 
 class MusicNotificationManger(
     private val context: Context,
@@ -64,19 +70,22 @@ class MusicNotificationManger(
         uri: Uri?,
         callback: PlayerNotificationManager.BitmapCallback
     ) {
-        //TODO Icon Image is flickering.
-        Glide.with(context).asBitmap()
-            .load(uri)
-            .into(object : CustomTarget<Bitmap>() {
-                override fun onResourceReady(
-                    resource: Bitmap,
-                    transition: Transition<in Bitmap>?
-                ) {
-                    callback.onBitmap(resource)
+        val imageLoader = imageLoader(context) // or create your own instance
+        val request = ImageRequest.Builder(context)
+            .data(uri)
+            .diskCacheKey(uri.toString())
+            .diskCachePolicy(CachePolicy.ENABLED)
+            .memoryCacheKey(uri.toString())
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .target(
+                onSuccess = { result ->
+                    val bitmap = (result as BitmapDrawable).bitmap
+                    callback.onBitmap(bitmap)
                 }
+            )
+            .build()
 
-                override fun onLoadCleared(placeholder: Drawable?) = Unit
-            })
+        imageLoader.enqueue(request)
     }
 
     private inner class DescriptionAdapter(
