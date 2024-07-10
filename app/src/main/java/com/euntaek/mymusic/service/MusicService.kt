@@ -24,6 +24,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
+import com.google.android.exoplayer2.metadata.Metadata
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -37,6 +38,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -61,11 +63,6 @@ class MusicService : MediaBrowserServiceCompat() {
     private var currentPlayingSong: MediaMetadataCompat? = null
 
     private lateinit var musicPlayerListener: Player.Listener
-
-    companion object {
-        var currentSongDuration = 0L
-            private set
-    }
 
     override fun onCreate() {
         super.onCreate()
@@ -92,7 +89,6 @@ class MusicService : MediaBrowserServiceCompat() {
                     startForeground(NOTIFICATION_ID, notification)
                     isForegroundService = true
                 }
-                currentSongDuration = exoPlayer.duration
             }
         )
 
@@ -103,8 +99,7 @@ class MusicService : MediaBrowserServiceCompat() {
                 currentPlayingSong = _songs.value.find { mediaId == it.description.mediaId }
                 preparePlayer(
                     songs = _songs.value,
-                    itemToPlay = currentPlayingSong,
-                    playNow = true
+                    itemToPlay = currentPlayingSong
                 )
             },
             setMediaDescription = { windowIndex ->
@@ -125,9 +120,16 @@ class MusicService : MediaBrowserServiceCompat() {
         musicPlayerListener = object : Player.Listener {
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
                 super.onPlayWhenReadyChanged(playWhenReady, reason)
+                Timber.tag("MusicService")
+                    .d("Player.Listener::onPlayWhenReadyChanged: %s", playWhenReady)
                 if (reason == Player.STATE_READY && !playWhenReady) {
                     stopForeground(STOP_FOREGROUND_DETACH)
                 }
+            }
+
+            override fun onMetadata(metadata: Metadata) {
+                super.onMetadata(metadata)
+                Timber.tag("MusicService").d("Player.Listener::onMetadata")
             }
         }
 
@@ -166,14 +168,13 @@ class MusicService : MediaBrowserServiceCompat() {
 
     private fun preparePlayer(
         songs: List<MediaMetadataCompat>,
-        itemToPlay: MediaMetadataCompat?,
-        playNow: Boolean
+        itemToPlay: MediaMetadataCompat?
     ) {
         val curSongIndex = if (currentPlayingSong == null) 0 else songs.indexOf(itemToPlay)
         exoPlayer.setMediaSource(songs.getMediaSource(this))
         exoPlayer.prepare()
         exoPlayer.seekTo(curSongIndex, 0L)
-        exoPlayer.playWhenReady = playNow
+        exoPlayer.playWhenReady = true
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -231,31 +232,58 @@ private class MusicQueueNavigator(
     val setMediaDescription: (Int) -> MediaDescriptionCompat
 ) : TimelineQueueNavigator(mediaSessionCompat) {
     override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
+        Timber.tag("MusicService").d("MusicQueueNavigator::getMediaDescription")
         return setMediaDescription(windowIndex)
+    }
+
+    override fun onSkipToNext(player: Player) {
+        Timber.tag("MusicService").d("MusicQueueNavigator::onSkipToNext")
+        super.onSkipToNext(player)
+    }
+
+    override fun onSkipToQueueItem(player: Player, id: Long) {
+        Timber.tag("MusicService").d("MusicQueueNavigator::onSkipToQueueItem")
+        super.onSkipToQueueItem(player, id)
+    }
+
+    override fun onSkipToPrevious(player: Player) {
+        Timber.tag("MusicService").d("MusicQueueNavigator::onSkipToPrevious")
+        super.onSkipToPrevious(player)
+    }
+
+    override fun getSupportedQueueNavigatorActions(player: Player): Long {
+        Timber.tag("MusicService").d("MusicQueueNavigator::getSupportedQueueNavigatorActions")
+        return super.getSupportedQueueNavigatorActions(player)
     }
 }
 
 private class MusicPlaybackPrepared(val onPrepareFromMediaId: (String, Boolean) -> Unit) :
     MediaSessionConnector.PlaybackPreparer {
     override fun onCommand(p0: Player, p1: String, p2: Bundle?, p3: ResultReceiver?): Boolean {
+        Timber.tag("MusicService").d("MusicPlaybackPrepared::onCommand")
         return false
     }
 
     override fun getSupportedPrepareActions(): Long {
+        Timber.tag("MusicService").d("MusicPlaybackPrepared::getSupportedPrepareActions")
         return PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID or
                 PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID
     }
 
     override fun onPrepare(playWhenReady: Boolean) {
+        Timber.tag("MusicService").d("MusicPlaybackPrepared::onPrepare: $playWhenReady")
     }
 
     override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
+        Timber.tag("MusicService").d("MusicPlaybackPrepared::onPrepareFromMediaId")
         onPrepareFromMediaId(mediaId, playWhenReady)
     }
 
     override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) {
+        Timber.tag("MusicService").d("MusicPlaybackPrepared::onPrepareFromSearch")
     }
 
     override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) {
+        Timber.tag("MusicService").d("MusicPlaybackPrepared::onPrepareFromUri")
     }
 }

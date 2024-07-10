@@ -68,7 +68,7 @@ fun SmallMusicPlayer(
     var offsetX by remember { mutableFloatStateOf(0f) }
     val songs by viewModel.songs.collectAsStateWithLifecycle()
     val currentSong by viewModel.currentPlayingSong.collectAsStateWithLifecycle()
-    val playbackStateCompat by viewModel.playbackState.observeAsState()
+    val playbackStateCompat by viewModel.playbackState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.secondaryContainer
     LaunchedEffect(key1 = currentSong, key2 = songs) {
         if (currentSong == null) {

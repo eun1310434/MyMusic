@@ -73,7 +73,6 @@ import com.euntaek.mymusic.data.entities.Song
 import com.euntaek.mymusic.ui.components.CachedAsyncImage
 import com.euntaek.mymusic.utility.formatLong
 import com.euntaek.mymusic.viewmodels.MainViewModel
-import com.euntaek.mymusic.viewmodels.SongViewModel
 
 
 @ExperimentalMaterialApi
@@ -81,15 +80,13 @@ import com.euntaek.mymusic.viewmodels.SongViewModel
 fun FullScreenMusicPlayer(
     backPressedDispatcher: OnBackPressedDispatcher,
     viewModel: MainViewModel = hiltViewModel(),
-    songViewModel: SongViewModel = hiltViewModel()
 ) {
     val playerBackgroundImage by viewModel.playerBackgroundImage.collectAsStateWithLifecycle()
     val showPlayerFullScreen by viewModel.isPlayerFullScreenShowing.collectAsStateWithLifecycle()
-    val currentPlaybackPosition by songViewModel.currentPlaybackPosition.collectAsStateWithLifecycle()
+    val currentPlaybackPosition by viewModel.currentPlaybackPosition.collectAsStateWithLifecycle()
     val currentSong by viewModel.currentPlayingSong.collectAsStateWithLifecycle()
 
-
-    LaunchedEffect("playbackPosition") { songViewModel.updateCurrentPlaybackPosition() }
+    LaunchedEffect("playbackPosition") { viewModel.updateCurrentPlaybackPosition() }
 
     AnimatedVisibility(
         visible = currentSong != null && showPlayerFullScreen,
@@ -107,8 +104,7 @@ fun FullScreenMusicPlayer(
             playNextSong = viewModel::skipToNextSong,
             playPreviousSong = viewModel::skipToPreviousSong,
             currentPlaybackPosition = currentPlaybackPosition,
-            currentPlayerPosition = songViewModel.currentPlayerPosition,
-            currentSongDuration = songViewModel.currentSongDuration
+            currentSongDuration = currentSong!!.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
         )
     }
 }
@@ -139,8 +135,7 @@ private fun FullScreenMusicPlayerContent(
     playPreviousSong: () -> Unit,
     seekTo: (Float) -> Unit,
     currentPlaybackPosition: Long,
-    currentSongDuration: Long,
-    currentPlayerPosition: Float
+    currentSongDuration: Long
 ) {
     val swappableState = rememberSwipeableState(initialValue = 0)
     val endAnchor = LocalConfiguration.current.screenHeightDp * LocalDensity.current.density
@@ -178,7 +173,13 @@ private fun FullScreenMusicPlayerContent(
             song = song,
             backgroundImage = backgroundImage,
             isSongPlaying = isSongPlaying,
-            playbackProgress = if (sliderIsChanging) localSliderValue else currentPlayerPosition,
+            playbackProgress = if (sliderIsChanging) localSliderValue else {
+                if (currentPlaybackPosition > 0) {
+                    currentPlaybackPosition.toFloat() / currentSongDuration
+                } else {
+                    0f
+                }
+            },
             currentTime = currentPlaybackPosition.formatLong(),
             totalTime = currentSongDuration.formatLong(),
             playOrToggleSong = { playOrToggleSong(song, true) },

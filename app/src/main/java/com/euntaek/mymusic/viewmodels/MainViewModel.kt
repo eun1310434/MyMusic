@@ -9,20 +9,26 @@ import com.euntaek.mymusic.data.entities.AppInfo
 import com.euntaek.mymusic.data.entities.Artist
 import com.euntaek.mymusic.data.entities.Song
 import com.euntaek.mymusic.data.repository.Constants
+import com.euntaek.mymusic.data.repository.Constants.UPDATE_PLAYER_POSITION_INTERVAL
+import com.euntaek.mymusic.service.MusicService
 import com.euntaek.mymusic.service.MusicServiceConnection
+import com.euntaek.mymusic.utility.currentPlaybackPosition
 import com.euntaek.mymusic.utility.isPlayEnabled
 import com.euntaek.mymusic.utility.isPlaying
 import com.euntaek.mymusic.utility.isPrepared
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject
+
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -38,7 +44,7 @@ class MainViewModel @Inject constructor(
     private val _appInfo = MutableStateFlow<AppInfo?>(null)
     var appInfo = _appInfo.asStateFlow()
 
-    val currentPlayingSong = musicServiceConnection.currentPlayingSong.asStateFlow()
+    val currentPlayingSong = musicServiceConnection.currentPlayingSong
 
     private val _playerBackgroundImage = MutableStateFlow<String?>(null)
     val playerBackgroundImage = _playerBackgroundImage.asStateFlow()
@@ -48,20 +54,6 @@ class MainViewModel @Inject constructor(
 
     private val _isPlayerFullScreenShowing = MutableStateFlow(false)
     var isPlayerFullScreenShowing = _isPlayerFullScreenShowing.asStateFlow()
-
-    fun showFullScreenPlayer() {
-        _isPlayerFullScreenShowing.value = true
-    }
-
-    fun hideFullScreenPlayer() {
-        _isPlayerFullScreenShowing.value = false
-    }
-
-    //TODO
-//    val isConnected = musicServiceConnection.isConnected
-//    val networkError = musicServiceConnection.networkFailure
-//    val curPlayingSong = musicServiceConnection.nowPlaying
-
 
     val songIsPlaying: Boolean
         get() = playbackState.value?.isPlaying == true
@@ -189,5 +181,25 @@ class MainViewModel @Inject constructor(
         } else {
             musicServiceConnection.transportController.playFromMediaId(mediaItem.mediaId, null)
         }
+    }
+
+    private val _currentPlaybackPosition = MutableStateFlow(0L)
+    val currentPlaybackPosition = _currentPlaybackPosition.asStateFlow()
+
+    suspend fun updateCurrentPlaybackPosition() {
+        val currentPosition = playbackState.value?.currentPlaybackPosition
+        if (currentPosition != null && currentPosition != _currentPlaybackPosition.value) {
+            _currentPlaybackPosition.value = currentPosition
+        }
+        delay(UPDATE_PLAYER_POSITION_INTERVAL)
+        updateCurrentPlaybackPosition()
+    }
+
+    fun showFullScreenPlayer() {
+        _isPlayerFullScreenShowing.value = true
+    }
+
+    fun hideFullScreenPlayer() {
+        _isPlayerFullScreenShowing.value = false
     }
 }
