@@ -31,7 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,8 +52,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.euntaek.mymusic.R
 import com.euntaek.mymusic.data.entities.Song
 import com.euntaek.mymusic.ui.theme.roundedShape
-import com.euntaek.mymusic.viewmodels.MainViewModel
 import com.euntaek.mymusic.utility.isPlaying
+import com.euntaek.mymusic.viewmodels.MainViewModel
 
 object SmallMusicPlayerDefaults {
     val Height = 60.dp
@@ -66,11 +65,11 @@ fun SmallMusicPlayer(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
-    val songs by viewModel.songs.collectAsStateWithLifecycle()
+    val musicData by viewModel.musicData.collectAsStateWithLifecycle()
     val currentSong by viewModel.currentPlayingSong.collectAsStateWithLifecycle()
     val playbackStateCompat by viewModel.playbackState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.secondaryContainer
-    LaunchedEffect(key1 = currentSong, key2 = songs) {
+    LaunchedEffect(key1 = currentSong, key2 = musicData?.songs) {
         if (currentSong == null) {
             viewModel.prepareFirstSong()
         }

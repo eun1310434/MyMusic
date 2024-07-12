@@ -48,8 +48,8 @@ fun SharedTransitionScope.ProfileDetailScreen(
 ) {
 
     val state = rememberLazyListState()
-    val artists by viewModel.artists.collectAsStateWithLifecycle()
-    val artist = artists.firstOrNull { it.id == artistId }
+    val musicData by viewModel.musicData.collectAsStateWithLifecycle()
+    val artist = musicData?.artists?.firstOrNull { it.id == artistId }
     Box(modifier = Modifier.fillMaxSize()) {
         CachedAsyncImage(
             imageUrl = artist?.image.orEmpty(),

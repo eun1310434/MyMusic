@@ -1,25 +1,24 @@
 package com.euntaek.mymusic.usecase
 
 import com.euntaek.mymusic.core.Either
-import com.euntaek.mymusic.data.entities.Song
+import com.euntaek.mymusic.data.entities.Album
 import com.euntaek.mymusic.data.repository.Constants
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 
-class GetAllSongsUseCase {
+class GetAllAlbumsUseCase {
     private val db = FirebaseFirestore.getInstance()
-    private val songCollection = db.collection(Constants.SONG_COLLECTION)
-    suspend operator fun invoke(): Either<List<Song>> {
+    private val albumCollection = db.collection(Constants.ALBUM_COLLECTION)
+    suspend operator fun invoke(): Either<List<Album>> {
         return try {
-            val songs = songCollection
+            val albums = albumCollection
                 .get()
                 .await()
-                .toObjects(Song::class.java)
-                .sortedBy { it.order }
-            Either.Success(songs)
+                .toObjects(Album::class.java)
+            Either.Success(albums)
         } catch (error: Exception) {
-            Timber.tag("GetAllSongsUseCase").e(error)
+            Timber.tag("GetAllAlbumsUseCase").e(error)
             Either.Error(error)
         }
     }

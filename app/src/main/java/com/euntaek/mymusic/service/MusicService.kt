@@ -13,6 +13,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
+import com.euntaek.mymusic.core.execUsesCase
 import com.euntaek.mymusic.data.repository.Constants.MEDIA_ROOT_ID
 import com.euntaek.mymusic.data.repository.Constants.NETWORK_FAILURE
 import com.euntaek.mymusic.data.repository.Constants.NOTIFICATION_ID
@@ -36,7 +37,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -68,6 +68,7 @@ class MusicService : MediaBrowserServiceCompat() {
         super.onCreate()
 
         serviceScope.launch { fetchMediaData() }
+
         setMediaSessionCompat()
 
         //Set MusicNotificationManager
@@ -112,7 +113,10 @@ class MusicService : MediaBrowserServiceCompat() {
 
 
     private suspend fun fetchMediaData() {
-        _songs.update { getAllSongsUseCase().map { it.toMediaMetadata() } }
+        execUsesCase(
+            load = { getAllSongsUseCase() },
+            success = { songs -> _songs.value = songs.map { it.toMediaMetadata() } }
+        )
     }
 
 

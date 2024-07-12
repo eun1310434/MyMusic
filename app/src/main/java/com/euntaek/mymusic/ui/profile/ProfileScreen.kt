@@ -50,7 +50,7 @@ fun SharedTransitionScope.ProfileScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     onItemClick: (String) -> Unit //artistId
 ) {
-    val artist by viewModel.artists.collectAsStateWithLifecycle()
+    val musicData by viewModel.musicData.collectAsStateWithLifecycle()
 
     val columnsCount = 2
     val paddingDp = 5.dp
@@ -62,7 +62,7 @@ fun SharedTransitionScope.ProfileScreen(
         horizontalArrangement = Arrangement.spacedBy(paddingDp),
         verticalArrangement = Arrangement.spacedBy(paddingDp)
     ) {
-        artist.forEachIndexed { index, artist ->
+        musicData?.artists?.forEachIndexed { index, artist ->
             if (index == 0) {
                 item(span = { GridItemSpan(columnsCount) }) {
                     ProfileItem(

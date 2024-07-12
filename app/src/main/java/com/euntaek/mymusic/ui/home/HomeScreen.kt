@@ -36,18 +36,16 @@ fun SharedTransitionScope.HomeScreen(
     LaunchedEffect(Unit) { viewModel.getAppInfo(appId = appId) }
 
     val appInfo by viewModel.appInfo.collectAsStateWithLifecycle()
-    val album by viewModel.album.collectAsStateWithLifecycle()
-    val artists by viewModel.artists.collectAsStateWithLifecycle()
-    val songs by viewModel.songs.collectAsStateWithLifecycle()
+    val musicData by viewModel.musicData.collectAsStateWithLifecycle()
 
-    if (appInfo != null && album != null && songs != null) {
+    if (appInfo != null && musicData != null) {
         MainPage(
             modifier = Modifier
                 .background(color = MaterialTheme.colorScheme.background)
                 .fillMaxSize(),
             appInfo = appInfo!!,
-            songs = songs!!,
-            artists = artists,
+            songs = musicData!!.songs,
+            artists = musicData!!.artists,
             animatedVisibilityScope = animatedVisibilityScope,
             onItemClick = viewModel::playOrToggleSong,
             onImageClick = navigateToProfileDetail,

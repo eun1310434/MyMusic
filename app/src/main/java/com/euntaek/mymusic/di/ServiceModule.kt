@@ -17,10 +17,6 @@ import dagger.hilt.android.scopes.ServiceScoped
 object ServiceModule {
     @ServiceScoped
     @Provides
-    fun provideGetAllSongsUseCase() = GetAllSongsUseCase()
-
-    @ServiceScoped
-    @Provides
     fun provideAudioAttributes() = AudioAttributes.Builder()
         .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
