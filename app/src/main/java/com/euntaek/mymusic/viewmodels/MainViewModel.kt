@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -156,15 +155,5 @@ class MainViewModel @Inject constructor(
         return mapLatest {
             transform(it)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, transform(value))
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun <T, K> StateFlow<T>.mapState(
-        initialValue: K,
-        transform: suspend (data: T) -> K
-    ): StateFlow<K> {
-        return mapLatest {
-            transform(it)
-        }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue)
     }
 }
