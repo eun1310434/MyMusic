@@ -37,6 +37,7 @@ fun SharedTransitionScope.HomeScreen(
 
     val appInfo by viewModel.appInfo.collectAsStateWithLifecycle()
     val musicData by viewModel.musicData.collectAsStateWithLifecycle()
+    val isSettingUpdateMarkEnabled by viewModel.isSettingUpdateMarkEnabled.collectAsStateWithLifecycle()
 
     if (appInfo != null && musicData != null) {
         MainPage(
@@ -51,7 +52,8 @@ fun SharedTransitionScope.HomeScreen(
             onImageClick = navigateToProfileDetail,
             onAboutButtonClick = navigateToProfile,
             onMailIconButtonClick = navigateToMailBox,
-            onSettingIconClick = navigateToSettings
+            onSettingIconClick = navigateToSettings,
+            isSettingUpdateMarkEnabled = isSettingUpdateMarkEnabled
         )
     } else {
         ProgressIndicatorPage()
@@ -70,7 +72,8 @@ private fun SharedTransitionScope.MainPage(
     onImageClick: (String) -> Unit, //index
     onAboutButtonClick: () -> Unit,
     onMailIconButtonClick: (() -> Unit)? = null,
-    onSettingIconClick: () -> Unit
+    onSettingIconClick: () -> Unit,
+    isSettingUpdateMarkEnabled: Boolean
 ) {
     TopDrawerColumn(
         modifier = modifier,
@@ -103,7 +106,8 @@ private fun SharedTransitionScope.MainPage(
                         whatsappLink = appInfo.whatsappLink,
                         onAboutButtonClick = onAboutButtonClick,
                         onMailIconButtonClick = onMailIconButtonClick,
-                        onSettingIconClick = onSettingIconClick
+                        onSettingIconClick = onSettingIconClick,
+                        isSettingUpdateMarkEnabled = isSettingUpdateMarkEnabled
                     )
                 },
                 onItemClick = onItemClick

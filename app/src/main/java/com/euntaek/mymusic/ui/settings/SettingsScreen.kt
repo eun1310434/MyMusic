@@ -54,7 +54,7 @@ private fun SettingsPage(appInfo: AppInfo) {
     Column(modifier = Modifier.fillMaxSize()) {
         TopBarMenu(
             title = stringResource(id = R.string.settings),
-            contentColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onBackground,
         )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             item {
@@ -84,14 +84,14 @@ private fun SettingsPage(appInfo: AppInfo) {
             }
             item {
                 SettingItem(
-                    title = stringResource(R.string.ticket),
+                    title = stringResource(R.string.tickets),
                     iconRes = R.drawable.ic_ticket,
                     enabled = false
                 )
             }
             item {
                 SettingItem(
-                    title = stringResource(R.string.notices),
+                    title = stringResource(R.string.news),
                     iconRes = R.drawable.ic_announcement,
                     enabled = false
                 )

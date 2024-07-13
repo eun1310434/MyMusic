@@ -57,7 +57,7 @@ fun TopBarMenu(
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.primary
+                color = contentColor
             )
         },
         endIcon = {

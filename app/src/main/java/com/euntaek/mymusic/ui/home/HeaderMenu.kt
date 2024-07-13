@@ -23,7 +23,8 @@ fun HeaderMenu(
     whatsappLink: String? = null,
     onAboutButtonClick: () -> Unit,
     onMailIconButtonClick: (() -> Unit)? = null,
-    onSettingIconClick: () -> Unit
+    onSettingIconClick: () -> Unit,
+    isSettingUpdateMarkEnabled: Boolean,
 ) {
     Row(modifier = modifier) {
         LinkButtons(
@@ -34,6 +35,7 @@ fun HeaderMenu(
             instagramLink = instagramLink,
             navigateToMailBox = onMailIconButtonClick,
             onSettingIconClick = onSettingIconClick,
+            isSettingUpdateMarkEnabled = isSettingUpdateMarkEnabled,
         )
         Spacer(modifier = Modifier.weight(1f))
         OutlinedButton(
@@ -56,6 +58,7 @@ private fun LinkButtons(
     whatsappLink: String? = null,
     navigateToMailBox: (() -> Unit)? = null,
     onSettingIconClick: () -> Unit,
+    isSettingUpdateMarkEnabled: Boolean
 ) {
     val uriHandler = LocalUriHandler.current
     val openUrl: (String) -> Unit = { uri ->
@@ -101,6 +104,7 @@ private fun LinkButtons(
 
         IconButton(
             iconRes = R.drawable.ic_more,
+            isUpdateMarkEnabled = isSettingUpdateMarkEnabled,
             onClick = onSettingIconClick
         )
     }

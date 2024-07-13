@@ -28,12 +28,12 @@
     <string name="app_version">App version</string>
     <string name="update">Update</string>
     <string name="account">Account</string>
-    <string name="notices">Notices</string>
+    <string name="news">News</string>
     <string name="language">Language</string>
     <string name="default_system_language">Default System Language</string>
     <string name="no_account">No account</string>
     <string name="share">Share</string>
     <string name="privacy">Privacy</string>
-    <string name="ticket">Ticket</string>
+    <string name="tickets">Tickets</string>
     <string name="help">Help</string>
 </resources>
