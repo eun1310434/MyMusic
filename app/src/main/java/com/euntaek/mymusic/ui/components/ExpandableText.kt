@@ -1,6 +1,7 @@
 package com.euntaek.mymusic.ui.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -18,18 +19,37 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import com.euntaek.mymusic.R
 
+/**
+ * Contains the default values used by [ExpandableText].
+ */
+object ExpandableTextDefaults {
+    const val MAX_LINES = 3
+}
 
+/**
+ * This [ExpandableText] is a text view component for when the text is too long and affects the screen's layout.
+ * It includes a function that can fold the text when it exceeds a certain number of lines defined by [maxLines].
+ *
+ * @param text The text to be displayed.
+ * @param modifier The [Modifier] used to adjust the layout or draw decoration content.
+ * @param color The [Color] to apply to the text. If [Color.Unspecified], and [style] has no color set,
+ * it will use [LocalContentColor].
+ * @param maxLines An optional maximum number of lines for the text to span, wrapping if necessary.
+ * If the text exceeds this number of lines, it will be truncated.
+ * @param style The style configuration for the text, such as color, font, line height, etc.
+ * @param onExpandStateChange A callback function that will be called when the expand state changes.
+ */
 @Composable
 fun ExpandableText(
-    modifier: Modifier = Modifier,
     text: String,
-    style: TextStyle = LocalTextStyle.current,
+    modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
-    maxLines: Int = 3,
+    maxLines: Int = ExpandableTextDefaults.MAX_LINES,
+    style: TextStyle = LocalTextStyle.current,
     onExpandStateChange: ((isExpanded: Boolean) -> Unit)? = null
 ) {
     var isExpanded by rememberSaveable(key = "isExpanded") { mutableStateOf(false) }
-    var expandable by remember { mutableStateOf(false) } // This needs to use "remember" for checking the overflow text when rotating the device.
+    var expandable by remember { mutableStateOf(false) }
 
     Column(modifier = modifier) {
         Text(
@@ -40,7 +60,6 @@ fun ExpandableText(
             maxLines = if (isExpanded && expandable) Int.MAX_VALUE else maxLines,
             onTextLayout = { textLayoutResult ->
                 if (!expandable) {
-                    //Checking whether the text has more than three lines, but before that, make sure the "maxLines" should be set by "collapsedMaxLine"
                     expandable = textLayoutResult.hasVisualOverflow
                 }
             }
