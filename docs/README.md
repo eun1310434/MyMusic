@@ -5,7 +5,7 @@
   </a>
 </p>
 
-## Tech stack base of Android App Template
+## Tech stack base
 * Kotlin
 * [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html)
 * [Kotlin DSL](https://developer.android.com/build/migrate-to-kotlin-dsl)
