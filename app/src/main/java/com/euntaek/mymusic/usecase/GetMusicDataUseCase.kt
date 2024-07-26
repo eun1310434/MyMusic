@@ -1,8 +1,8 @@
 package com.euntaek.mymusic.usecase
 
 import com.euntaek.mymusic.App
-import com.euntaek.mymusic.core.Either
-import com.euntaek.mymusic.core.execUsesCase
+import com.euntaek.mymusic.utility.Either
+import com.euntaek.mymusic.utility.execUsesCase
 import com.euntaek.mymusic.data.entities.MusicData
 import timber.log.Timber
 import javax.inject.Inject

@@ -13,12 +13,12 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
-import com.euntaek.mymusic.core.execUsesCase
 import com.euntaek.mymusic.data.repository.Constants.MEDIA_ROOT_ID
 import com.euntaek.mymusic.data.repository.Constants.NETWORK_FAILURE
 import com.euntaek.mymusic.data.repository.Constants.NOTIFICATION_ID
 import com.euntaek.mymusic.data.repository.Constants.SERVICE_TAG
 import com.euntaek.mymusic.usecase.GetAllSongsUseCase
+import com.euntaek.mymusic.utility.execUsesCase
 import com.euntaek.mymusic.utility.toMediaMetadata
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player

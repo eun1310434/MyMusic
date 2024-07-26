@@ -1,6 +1,6 @@
 package com.euntaek.mymusic.usecase
 
-import com.euntaek.mymusic.core.Either
+import com.euntaek.mymusic.utility.Either
 import com.euntaek.mymusic.data.entities.Album
 import com.euntaek.mymusic.data.repository.Constants
 import com.google.firebase.firestore.FirebaseFirestore

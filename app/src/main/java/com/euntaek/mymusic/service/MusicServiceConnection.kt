@@ -51,7 +51,7 @@ class MusicServiceConnection(val context: Context) {
             onMetadataChangedListener = { metadata ->
                 _currentPlayingSong.value = metadata
             },
-            onSessionEventListener = { event, extras ->
+            onSessionEventListener = { event, _ ->
                 when (event) {
                     NETWORK_FAILURE -> Timber.tag("MusicServiceConnection")
                         .d("MediaControllerCallback::onSessionEvent::NETWORK_FAILURE")

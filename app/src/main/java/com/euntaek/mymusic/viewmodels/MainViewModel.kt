@@ -1,11 +1,9 @@
 package com.euntaek.mymusic.viewmodels
 
 import android.support.v4.media.MediaMetadataCompat
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.euntaek.mymusic.App
 import com.euntaek.mymusic.BuildConfig
-import com.euntaek.mymusic.core.execUsesCase
 import com.euntaek.mymusic.data.entities.AppInfo
 import com.euntaek.mymusic.data.entities.MusicData
 import com.euntaek.mymusic.data.entities.Song
@@ -14,19 +12,15 @@ import com.euntaek.mymusic.service.MusicServiceConnection
 import com.euntaek.mymusic.usecase.GetAppInfoUseCase
 import com.euntaek.mymusic.usecase.GetMusicDataUseCase
 import com.euntaek.mymusic.utility.currentPlaybackPosition
+import com.euntaek.mymusic.utility.execUsesCase
 import com.euntaek.mymusic.utility.isPlayEnabled
 import com.euntaek.mymusic.utility.isPlaying
 import com.euntaek.mymusic.utility.isPrepared
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -37,7 +31,7 @@ class MainViewModel @Inject constructor(
     private val musicServiceConnection: MusicServiceConnection,
     private val getMusicDataUseCase: GetMusicDataUseCase,
     private val getAppInfoUseCase: GetAppInfoUseCase
-) : ViewModel() {
+) : BaseViewModel() {
     private val _musicData: MutableStateFlow<MusicData?> = MutableStateFlow(null)
     val musicData = _musicData.asStateFlow()
 
@@ -146,14 +140,5 @@ class MainViewModel @Inject constructor(
 
     fun hideFullScreenPlayer() {
         _isPlayerFullScreenShowing.value = false
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun <T, K> StateFlow<T>.mapState(
-        transform: (data: T) -> K
-    ): StateFlow<K> {
-        return mapLatest {
-            transform(it)
-        }.stateIn(viewModelScope, SharingStarted.Eagerly, transform(value))
     }
 }

@@ -1,4 +1,4 @@
-package com.euntaek.mymusic.core
+package com.euntaek.mymusic.utility
 
 sealed class Either<out R> {
     data class Success<out T>(val data: T) : Either<T>()
@@ -11,17 +11,5 @@ sealed class Either<out R> {
             is Error -> "Error[exception=$exception]"
             //            Loading -> "Loading"
         }
-    }
-}
-
-
-suspend fun <T> execUsesCase(
-    load: suspend () -> Either<T>,
-    success: (T) -> Unit,
-    error: (Exception) -> Unit = {}
-) {
-    when (val result = load()) {
-        is Either.Success -> success(result.data)
-        is Either.Error -> error(result.exception)
     }
 }

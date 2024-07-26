@@ -2,10 +2,6 @@ package com.euntaek.mymusic.utility
 
 import android.support.v4.media.MediaMetadataCompat
 import com.euntaek.mymusic.data.entities.Song
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -13,7 +9,6 @@ fun Long.formatLong(): String {
     val dateFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
     return dateFormat.format(this)
 }
-
 
 fun Song.toMediaMetadata(): MediaMetadataCompat = MediaMetadataCompat.Builder()
     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, this.title)
@@ -26,3 +21,15 @@ fun Song.toMediaMetadata(): MediaMetadataCompat = MediaMetadataCompat.Builder()
     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, this.imageUrl)
     .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, this.subtitle)
     .build()
+
+
+suspend fun <T> execUsesCase(
+    load: suspend () -> Either<T>,
+    success: (T) -> Unit,
+    error: (Exception) -> Unit = {}
+) {
+    when (val result = load()) {
+        is Either.Success -> success(result.data)
+        is Either.Error -> error(result.exception)
+    }
+}
