@@ -19,7 +19,6 @@
     - Clean Architecture
 * [API Guidelines for @Composable components](https://android.googlesource.com/platform/frameworks/support/+/androidx-main/compose/docs/compose-component-api-guidelines.md)
 * [JetPack Compose](https://developer.android.com/jetpack/compose?gclid=Cj0KCQiAjMKqBhCgARIsAPDgWlyVg8bZaasX_bdQfYrAXsuDQ6vD-2SmFcTv34Fb-jLQxgGqPD7UxKgaAso5EALw_wcB&gclsrc=aw.ds)
-* [Compose Destinations](https://github.com/raamcosta/compose-destinations) / [Documentation](https://composedestinations.rafaelcosta.xyz/)
 * [Gradle Version Catalogs (toml)](https://developer.android.com/build/migrate-to-catalogs)
 * [Coil](https://github.com/coil-kt/coil)
 * [Timber Client logging](https://github.com/JakeWharton/timber)
