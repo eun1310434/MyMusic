@@ -109,10 +109,10 @@ fun SmallMusicPlayer(
                             shape = RoundedCornerShape(5.dp)
                         )
                         .background(backgroundColor),
-                    song = song!!.toSong()!!,
+                    song = song!!,
                     isPlaying = playbackStateCompat?.isPlaying,
                     onClick = { viewModel.showFullScreenPlayer() },
-                    onPlayToggleClick = { viewModel.playOrToggleSong(song.toSong()!!, true) }
+                    onPlayToggleClick = { viewModel.playOrToggleSong(song!!, true) }
                 )
             }
         }

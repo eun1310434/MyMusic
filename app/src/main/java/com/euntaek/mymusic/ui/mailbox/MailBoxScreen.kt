@@ -9,7 +9,7 @@ import com.euntaek.mymusic.viewmodels.MainViewModel
 
 
 @Composable
-fun MailBoxScreen(viewModel: MainViewModel, backDispatcher: OnBackPressedDispatcher) {
+fun MailBoxScreen(viewModel: MainViewModel, backPressedDispatcher: OnBackPressedDispatcher) {
     Column(modifier = Modifier.fillMaxSize()) {
         // TODO This will be used for showing the Mail list.
     }

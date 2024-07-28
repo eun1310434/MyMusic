@@ -1,6 +1,5 @@
 package com.euntaek.mymusic.viewmodels
 
-import android.support.v4.media.MediaMetadataCompat
 import androidx.lifecycle.viewModelScope
 import com.euntaek.mymusic.App
 import com.euntaek.mymusic.BuildConfig
@@ -16,11 +15,15 @@ import com.euntaek.mymusic.utility.execUsesCase
 import com.euntaek.mymusic.utility.isPlayEnabled
 import com.euntaek.mymusic.utility.isPlaying
 import com.euntaek.mymusic.utility.isPrepared
+import com.euntaek.mymusic.utility.toSong
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -42,7 +45,8 @@ class MainViewModel @Inject constructor(
         it?.version != BuildConfig.VERSION_NAME
     }
 
-    val currentPlayingSong = musicServiceConnection.currentPlayingSong
+    val currentPlayingSong =
+        musicServiceConnection.currentPlayingMediaMeta.mapState { it?.toSong() }
 
     val playerBackgroundImage = currentPlayingSong.mapState {
         _appInfo.value?.playerGifs?.random()
@@ -51,10 +55,20 @@ class MainViewModel @Inject constructor(
     private val _isPlayerFullScreenShowing = MutableStateFlow(false)
     val isPlayerFullScreenShowing = _isPlayerFullScreenShowing.asStateFlow()
 
-    val songIsPlaying: Boolean
-        get() = playbackState.value?.isPlaying == true
-
     val playbackState = musicServiceConnection.playbackState
+    val isSongPlaying = playbackState.mapState { it?.isPlaying == true }
+    private val _isSongPrepared = playbackState.mapState { it?.isPrepared == true }
+
+    private val _currentPlaybackPosition = MutableStateFlow(0L)
+    val currentPlaybackPosition = _currentPlaybackPosition.asStateFlow()
+
+    val playbackProgress = combine(_currentPlaybackPosition, currentPlayingSong) { currentPlaybackPosition,song ->
+        val playbackPos = currentPlaybackPosition.toFloat()
+        val duration = song?.duration
+        if (playbackPos> 0 && duration != null) {
+            currentPlaybackPosition.toFloat() / duration
+        } else 0f
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0f)
 
     init {
         getMusicData()
@@ -100,10 +114,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun playOrToggleSong(mediaItem: Song, toggle: Boolean = false) {
-        val isPrepared = playbackState.value?.isPrepared ?: false
-        if (isPrepared && mediaItem.mediaId ==
-            currentPlayingSong.value?.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
-        ) {
+        if (_isSongPrepared.value && mediaItem.mediaId == currentPlayingSong.value?.mediaId) {
             playbackState.value?.let { playbackState ->
                 when {
                     playbackState.isPlaying -> {
@@ -121,9 +132,6 @@ class MainViewModel @Inject constructor(
             musicServiceConnection.transportController.playFromMediaId(mediaItem.mediaId, null)
         }
     }
-
-    private val _currentPlaybackPosition = MutableStateFlow(0L)
-    val currentPlaybackPosition = _currentPlaybackPosition.asStateFlow()
 
     suspend fun updateCurrentPlaybackPosition() {
         val currentPosition = playbackState.value?.currentPlaybackPosition

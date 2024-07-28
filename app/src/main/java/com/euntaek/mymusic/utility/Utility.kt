@@ -2,12 +2,14 @@ package com.euntaek.mymusic.utility
 
 import android.support.v4.media.MediaMetadataCompat
 import com.euntaek.mymusic.data.entities.Song
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 fun Long.formatLong(): String {
-    val dateFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
-    return dateFormat.format(this)
+    return if (this > -1) {
+        SimpleDateFormat("mm:ss", Locale.getDefault()).format(this)
+    } else ""
 }
 
 fun Song.toMediaMetadata(): MediaMetadataCompat = MediaMetadataCompat.Builder()
@@ -22,6 +24,20 @@ fun Song.toMediaMetadata(): MediaMetadataCompat = MediaMetadataCompat.Builder()
     .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, this.subtitle)
     .build()
 
+
+fun MediaMetadataCompat.toSong(): Song? {
+    return description?.let {
+        Timber.e(it.title.toString()+"  " +  this.getLong(MediaMetadataCompat.METADATA_KEY_DURATION))
+        Song(
+            mediaId = it.mediaId.orEmpty(),
+            title = it.title.toString(),
+            subtitle = it.subtitle.toString(),
+            songUrl = it.mediaUri.toString(),
+            imageUrl = it.iconUri.toString(),
+            duration = this.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
+        )
+    }
+}
 
 suspend fun <T> execUsesCase(
     load: suspend () -> Either<T>,

@@ -1,6 +1,5 @@
 package com.euntaek.mymusic.ui.player
 
-import android.support.v4.media.MediaMetadataCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.compose.animation.AnimatedVisibility
@@ -34,6 +33,7 @@ import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material.swipeable
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -66,7 +66,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.euntaek.mymusic.R
 import com.euntaek.mymusic.data.entities.Song
@@ -77,47 +76,36 @@ import com.euntaek.mymusic.viewmodels.MainViewModel
 
 @ExperimentalMaterialApi
 @Composable
-fun FullScreenMusicPlayer(
+fun FullScreenMusicPlayerScreen(
+    viewModel: MainViewModel,
     backPressedDispatcher: OnBackPressedDispatcher,
-    viewModel: MainViewModel = hiltViewModel(),
 ) {
     val playerBackgroundImage by viewModel.playerBackgroundImage.collectAsStateWithLifecycle()
-    val showPlayerFullScreen by viewModel.isPlayerFullScreenShowing.collectAsStateWithLifecycle()
+    val isPlayerFullScreenShowing by viewModel.isPlayerFullScreenShowing.collectAsStateWithLifecycle()
     val currentPlaybackPosition by viewModel.currentPlaybackPosition.collectAsStateWithLifecycle()
+    val playbackProgress by viewModel.playbackProgress.collectAsStateWithLifecycle()
+    val isSongPlaying by viewModel.isSongPlaying.collectAsStateWithLifecycle()
     val currentSong by viewModel.currentPlayingSong.collectAsStateWithLifecycle()
 
-    LaunchedEffect("playbackPosition") { viewModel.updateCurrentPlaybackPosition() }
+    LaunchedEffect(Unit) { viewModel.updateCurrentPlaybackPosition() }
 
     AnimatedVisibility(
-        visible = currentSong != null && showPlayerFullScreen,
+        visible = currentSong != null && isPlayerFullScreenShowing,
         enter = slideInVertically(initialOffsetY = { it }),
         exit = slideOutVertically(targetOffsetY = { it })
     ) {
         FullScreenMusicPlayerContent(
-            song = currentSong!!.toSong()!!,
+            song = currentSong!!,
             backgroundImage = playerBackgroundImage,
             backPressedDispatcher = backPressedDispatcher,
-            isSongPlaying = viewModel.songIsPlaying,
+            isSongPlaying = isSongPlaying,
+            playbackProgress = playbackProgress,
             seekTo = viewModel::seekTo,
             hideFullScreenPlayer = viewModel::hideFullScreenPlayer,
             playOrToggleSong = viewModel::playOrToggleSong,
             playNextSong = viewModel::skipToNextSong,
             playPreviousSong = viewModel::skipToPreviousSong,
-            currentPlaybackPosition = currentPlaybackPosition,
-            currentSongDuration = currentSong!!.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
-        )
-    }
-}
-
-
-fun MediaMetadataCompat.toSong(): Song? {
-    return description?.let {
-        Song(
-            mediaId = it.mediaId ?: "",
-            title = it.title.toString(),
-            subtitle = it.subtitle.toString(),
-            songUrl = it.mediaUri.toString(),
-            imageUrl = it.iconUri.toString()
+            currentPlaybackPosition = currentPlaybackPosition
         )
     }
 }
@@ -127,15 +115,15 @@ fun MediaMetadataCompat.toSong(): Song? {
 private fun FullScreenMusicPlayerContent(
     song: Song,
     backPressedDispatcher: OnBackPressedDispatcher,
-    backgroundImage: String?,
     isSongPlaying: Boolean,
+    playbackProgress: Float,
+    currentPlaybackPosition: Long,
+    backgroundImage: String?,
     hideFullScreenPlayer: () -> Unit,
     playOrToggleSong: (Song, Boolean) -> Unit,
     playNextSong: () -> Unit,
     playPreviousSong: () -> Unit,
-    seekTo: (Float) -> Unit,
-    currentPlaybackPosition: Long,
-    currentSongDuration: Long
+    seekTo: (Float) -> Unit
 ) {
     val swappableState = rememberSwipeableState(initialValue = 0)
     val endAnchor = LocalConfiguration.current.screenHeightDp * LocalDensity.current.density
@@ -173,15 +161,9 @@ private fun FullScreenMusicPlayerContent(
             song = song,
             backgroundImage = backgroundImage,
             isSongPlaying = isSongPlaying,
-            playbackProgress = if (sliderIsChanging) localSliderValue else {
-                if (currentPlaybackPosition > 0) {
-                    currentPlaybackPosition.toFloat() / currentSongDuration
-                } else {
-                    0f
-                }
-            },
+            playbackProgress = playbackProgress,
             currentTime = currentPlaybackPosition.formatLong(),
-            totalTime = currentSongDuration.formatLong(),
+            totalTime = song.duration?.formatLong(),
             playOrToggleSong = { playOrToggleSong(song, true) },
             playNextSong = playNextSong,
             playPreviousSong = playPreviousSong,
@@ -190,8 +172,10 @@ private fun FullScreenMusicPlayerContent(
                 sliderIsChanging = true
             },
             onSliderChangeFinished = {
-                seekTo(currentSongDuration * localSliderValue)
-                sliderIsChanging = false
+                if (song.duration != null) {
+                    seekTo(song.duration * localSliderValue)
+                    sliderIsChanging = false
+                }
             },
             onForward = {
                 seekTo(currentPlaybackPosition + 10 * 1000f)
@@ -220,7 +204,7 @@ private fun FullScreenMusicPlayerContent(
     isSongPlaying: Boolean,
     playbackProgress: Float,
     currentTime: String,
-    totalTime: String,
+    totalTime: String?,
     playOrToggleSong: () -> Unit,
     playNextSong: () -> Unit,
     playPreviousSong: () -> Unit,
@@ -321,7 +305,7 @@ private fun PlayerSlider(
     modifier: Modifier,
     playbackProgress: Float,
     currentTime: String,
-    totalTime: String,
+    totalTime: String?,
     onSliderChange: (Float) -> Unit,
     onSliderChangeFinished: () -> Unit,
 ) {
@@ -352,12 +336,21 @@ private fun PlayerSlider(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
-            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-                Text(
-                    text = totalTime,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.bodyMedium
+
+            if (totalTime.isNullOrEmpty()) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(15.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
+            } else {
+                CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                    Text(
+                        text = totalTime,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
     }

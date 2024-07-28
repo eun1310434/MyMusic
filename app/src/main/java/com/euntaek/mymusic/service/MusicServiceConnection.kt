@@ -20,8 +20,8 @@ class MusicServiceConnection(val context: Context) {
     private val _playbackState = MutableStateFlow<PlaybackStateCompat?>(null)
     val playbackState = _playbackState.asStateFlow()
 
-    private var _currentPlayingSong = MutableStateFlow<MediaMetadataCompat?>(null)
-    val currentPlayingSong = _currentPlayingSong.asStateFlow()
+    private var _currentPlayingMediaMeta = MutableStateFlow<MediaMetadataCompat?>(null)
+    val currentPlayingMediaMeta = _currentPlayingMediaMeta.asStateFlow()
 
     private lateinit var mediaController: MediaControllerCompat
 
@@ -49,7 +49,7 @@ class MusicServiceConnection(val context: Context) {
                 _playbackState.update { state }
             },
             onMetadataChangedListener = { metadata ->
-                _currentPlayingSong.value = metadata
+                _currentPlayingMediaMeta.value = metadata
             },
             onSessionEventListener = { event, _ ->
                 when (event) {
@@ -67,7 +67,7 @@ class MusicServiceConnection(val context: Context) {
     }
 
     fun setCurrentPlayingSong(song: Song) {
-        _currentPlayingSong.value = song.toMediaMetadata()
+        _currentPlayingMediaMeta.value = song.toMediaMetadata()
     }
 }
 

@@ -26,7 +26,7 @@ import androidx.navigation.navArgument
 import com.euntaek.mymusic.ui.home.HomeScreen
 import com.euntaek.mymusic.ui.mailbox.MailBoxScreen
 import com.euntaek.mymusic.ui.navigation.Destination
-import com.euntaek.mymusic.ui.player.FullScreenMusicPlayer
+import com.euntaek.mymusic.ui.player.FullScreenMusicPlayerScreen
 import com.euntaek.mymusic.ui.player.SmallMusicPlayer
 import com.euntaek.mymusic.ui.profile.ProfileDetailScreen
 import com.euntaek.mymusic.ui.profile.ProfileScreen
@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
 @ExperimentalMaterialApi
 @Composable
 fun MusicPlayerApp(
-    vm: MainViewModel = hiltViewModel(),
+    viewModel: MainViewModel = hiltViewModel(),
     startDestination: String = Destination.HOME,
     backPressedDispatcher: OnBackPressedDispatcher
 ) {
@@ -84,7 +84,7 @@ fun MusicPlayerApp(
             ) {
                 composable(Destination.HOME) {
                     HomeScreen(
-                        viewModel = vm,
+                        viewModel = viewModel,
                         animatedVisibilityScope = this,
                         navigateToProfileDetail = { index -> navController.navigate("${Destination.PROFILE_DETAIL}/$index") },
                         navigateToProfile = { navController.navigate(route = Destination.PROFILE) },
@@ -102,28 +102,32 @@ fun MusicPlayerApp(
                 ) {
                     val artistId = it.arguments?.getString("artistId").orEmpty()
                     ProfileDetailScreen(
-                        viewModel = vm,
+                        viewModel = viewModel,
                         animatedVisibilityScope = this,
                         artistId = artistId
                     )
                 }
                 composable(Destination.PROFILE) {
                     ProfileScreen(
-                        viewModel = vm,
+                        viewModel = viewModel,
                         animatedVisibilityScope = this
                     ) { artistId ->
                         navController.navigate("${Destination.PROFILE_DETAIL}/$artistId")
                     }
                 }
                 composable(Destination.MAIL_BOX) {
-                    MailBoxScreen(vm, backPressedDispatcher)
+                    MailBoxScreen(
+                        viewModel = viewModel,
+                        backPressedDispatcher = backPressedDispatcher
+                    )
                 }
                 composable(Destination.SETTINGS) {
-                    SettingsScreen(vm)
+                    SettingsScreen(viewModel = viewModel)
                 }
             }
             SmallMusicPlayer(modifier = Modifier.align(Alignment.BottomCenter))
-            FullScreenMusicPlayer(
+            FullScreenMusicPlayerScreen(
+                viewModel = viewModel,
                 backPressedDispatcher = backPressedDispatcher,
             )
         }
