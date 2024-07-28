@@ -2,7 +2,6 @@ package com.euntaek.mymusic.utility
 
 import android.support.v4.media.MediaMetadataCompat
 import com.euntaek.mymusic.data.entities.Song
-import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -27,7 +26,6 @@ fun Song.toMediaMetadata(): MediaMetadataCompat = MediaMetadataCompat.Builder()
 
 fun MediaMetadataCompat.toSong(): Song? {
     return description?.let {
-        Timber.e(it.title.toString()+"  " +  this.getLong(MediaMetadataCompat.METADATA_KEY_DURATION))
         Song(
             mediaId = it.mediaId.orEmpty(),
             title = it.title.toString(),
