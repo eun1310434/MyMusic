@@ -11,7 +11,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -112,7 +110,12 @@ fun SmallMusicPlayer(
                     song = song!!,
                     isPlaying = playbackStateCompat?.isPlaying,
                     onClick = { viewModel.showFullScreenPlayer() },
-                    onPlayToggleClick = { viewModel.playOrToggleSong(song!!, true) }
+                    onPlayToggleClick = {
+                        viewModel.playOrToggleSong(
+                            mediaItem = song,
+                            toggle = true
+                        )
+                    }
                 )
             }
         }
@@ -193,16 +196,7 @@ fun PlayToggle(
         modifier = Modifier
             .padding(end = 16.dp)
             .size(48.dp)
-            .clickable(
-                interactionSource = remember {
-                    MutableInteractionSource()
-                },
-                indication = rememberRipple(
-                    bounded = false,
-                    radius = 24.dp
-                ),
-                onClick = onPlayToggleClick
-            )
+            .clickable(onClick = onPlayToggleClick)
     )
 }
 
