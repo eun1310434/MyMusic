@@ -7,7 +7,6 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -44,7 +43,7 @@ import com.euntaek.mymusic.ui.components.CachedAsyncImage
 import kotlinx.coroutines.delay
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.AlbumInfo(
     title: String,
@@ -92,7 +91,7 @@ fun SharedTransitionScope.AlbumInfo(
                 .fillMaxHeight(0.6f)
                 .fillMaxWidth(),
             state = horizontalPagerState,
-            beyondBoundsPageCount = 4
+            beyondViewportPageCount = 4
         ) { page ->
             val artist = artists[page]
             CachedAsyncImage(
