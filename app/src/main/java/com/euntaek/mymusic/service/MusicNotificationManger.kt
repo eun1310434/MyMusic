@@ -13,16 +13,11 @@ import android.support.v4.media.session.MediaSessionCompat
 import coil.Coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import coil.util.DebugLogger
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.euntaek.mymusic.R
 import com.euntaek.mymusic.data.repository.Constants.NOTIFICATION_CHANNEL_ID
 import com.euntaek.mymusic.data.repository.Constants.NOTIFICATION_ID
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
-import timber.log.Timber
 
 class MusicNotificationManger(
     private val context: Context,
