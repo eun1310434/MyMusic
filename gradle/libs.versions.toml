@@ -8,10 +8,6 @@ androidx-window = "1.3.0"
 androidxHiltNavigationCompose = "1.2.0"
 coil = "2.7.0"
 androidx-media3 = "1.4.1"
-# @keep
-compileSdk = "35"
-# @keep
-compose-compiler = "1.5.5"
 coroutines = "1.10.1"
 exoplayerCore = "2.19.1"
 exoplayerUi = "2.19.1"
@@ -24,19 +20,14 @@ hilt = "2.56"
 hiltExt = "1.2.0"
 jdkDesugar = "2.1.5"
 junit = "4.13.2"
-# @pin Update in conjuction with Compose Compiler
 kotlin = "2.1.10"
 ksp = "2.1.10-1.0.31"
 lifecycleExtensions = "2.2.0"
 lifecycleRuntimeCompose = "2.9.0"
 material = "1.12.0"
-# @keep
-media3Ui = "1.4.1"
-minSdk = "29"
+media3Ui = "1.6.1"
 paletteKtx = "1.0.0"
 room = "2.7.1"
-# @keep
-targetSdk = "35"
 version-catalog-update = "0.8.1"
 timber = "5.0.1"
 transportRuntime = "4.0.0"
@@ -45,6 +36,12 @@ material3Android = "1.3.2"
 junitKtx = "1.2.1"
 composeAnimation = "1.8.1"
 navigationCompose = "2.9.0"
+
+# @keep
+minSdk = "29"
+targetSdk = "35"
+compileSdk = "35"
+compose-compiler = "1.5.5"
 
 [libraries]
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "composeAnimation" }
