@@ -85,8 +85,6 @@ dependencies {
     androidTestImplementation(composeBom)
     implementation(libs.transport.runtime)
     implementation(libs.kotlin.stdlib)
-    implementation(libs.kotlinx.collections.immutable)
-    //implementation(libs.androidx.appcompat)
     implementation(libs.google.android.material)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.palette)
