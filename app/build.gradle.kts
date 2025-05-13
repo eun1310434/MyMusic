@@ -119,7 +119,6 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.coil.kt.compose)
     implementation(libs.coil.kt.gif)
-    implementation(libs.glide)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     ksp(libs.hilt.ext.compiler)
