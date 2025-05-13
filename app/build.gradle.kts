@@ -102,7 +102,6 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     coreLibraryDesugaring(libs.core.jdk.desugaring)
 
-    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.google.android.material)
     implementation(libs.firebase.firestore.ktx)
