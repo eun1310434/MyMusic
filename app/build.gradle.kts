@@ -78,11 +78,14 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.material3.android)
-    implementation(libs.androidx.junit.ktx)
+    // Use a Bill of Materials: https://developer.android.com/develop/ui/compose/bom
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
+    testImplementation(composeBom)
     androidTestImplementation(composeBom)
+
+    implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.junit.ktx)
     implementation(libs.transport.runtime)
     implementation(libs.kotlin.stdlib)
     implementation(libs.google.android.material)
