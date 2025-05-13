@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "949504627275",
+    "project_id": "test-21a7a",
+    "storage_bucket": "test-21a7a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:949504627275:android:bb2dd98c642325513273ce",
+        "android_client_info": {
+          "package_name": "com.euntaek.mymusic.cartet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1RRL_0sdj_eCfLA_tcIpnI2up7NfI7S8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
