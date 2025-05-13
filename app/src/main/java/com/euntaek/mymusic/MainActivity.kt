@@ -7,16 +7,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -33,7 +30,6 @@ import com.euntaek.mymusic.ui.profile.ProfileScreen
 import com.euntaek.mymusic.ui.settings.SettingsScreen
 import com.euntaek.mymusic.ui.theme.MyMusicTheme
 import com.euntaek.mymusic.viewmodels.MainViewModel
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -55,22 +51,11 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalSharedTransitionApi::class)
 @ExperimentalMaterialApi
 @Composable
-fun MusicPlayerApp(
+private fun MusicPlayerApp(
     viewModel: MainViewModel = hiltViewModel(),
     startDestination: String = Destination.HOME,
     backPressedDispatcher: OnBackPressedDispatcher
 ) {
-    val systemUiController = rememberSystemUiController()
-
-    val useDarkIcons = !isSystemInDarkTheme()
-
-    SideEffect {
-        systemUiController.setSystemBarsColor(
-            color = Color.Transparent,
-            darkIcons = useDarkIcons
-        )
-    }
-
     val navController = rememberNavController()
     Box(
         modifier = Modifier
@@ -86,7 +71,9 @@ fun MusicPlayerApp(
                     HomeScreen(
                         viewModel = viewModel,
                         animatedVisibilityScope = this,
-                        navigateToProfileDetail = { index -> navController.navigate("${Destination.PROFILE_DETAIL}/$index") },
+                        navigateToProfileDetail = { index ->
+                            navController.navigate("${Destination.PROFILE_DETAIL}/$index")
+                        },
                         navigateToProfile = { navController.navigate(route = Destination.PROFILE) },
                         navigateToSettings = { navController.navigate(route = Destination.SETTINGS) },
                         navigateToMailBox = null // TODO impl, { navController.navigate(route = Destination.MAIL_BOX) }

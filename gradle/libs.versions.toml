@@ -1,6 +1,4 @@
 [versions]
-accompanist = "0.32.0"
-accompanistInsets = "0.13.0"
 androidGradlePlugin = "8.10.0"
 androidx-activity-compose = "1.10.1"
 androidx-appcompat = "1.7.0"
@@ -9,10 +7,10 @@ androidx-palette = "1.0.0"
 androidx-window = "1.3.0"
 androidxHiltNavigationCompose = "1.2.0"
 coil = "2.7.0"
-androidxComposeFoundation = "1.8.1"
 androidx-media3 = "1.4.1"
 # @keep
 compileSdk = "35"
+# @keep
 compose-compiler = "1.5.5"
 coroutines = "1.10.1"
 exoplayerCore = "2.19.1"
@@ -51,10 +49,6 @@ navigationCompose = "2.9.0"
 [libraries]
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "composeAnimation" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version.ref = "accompanist" }
-accompanist-insets = { module = "com.google.accompanist:accompanist-insets", version.ref = "accompanistInsets" }
-accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanist" }
-accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "androidx-activity-compose" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
