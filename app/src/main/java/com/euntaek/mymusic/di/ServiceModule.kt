@@ -1,7 +1,6 @@
 package com.euntaek.mymusic.di
 
 import android.content.Context
-import com.euntaek.mymusic.usecase.GetAllSongsUseCase
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes

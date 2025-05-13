@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.euntaek.mymusic.data.entities.Song
 
-object SongListDefaults {
+private object SongListDefaults {
     val HeaderRoundedCornerSize = 30.dp
     val HeaderBottomPadding = 5.dp
     val HeaderElevation = 5.dp
