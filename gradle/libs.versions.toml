@@ -5,7 +5,6 @@ androidGradlePlugin = "8.10.0"
 androidx-activity-compose = "1.9.3"
 androidx-appcompat = "1.7.0"
 androidx-compose-bom = "2024.11.00"
-androidx-constraintlayout = "1.1.0"
 androidx-corektx = "1.15.0"
 androidx-lifecycle-compose = "2.8.7"
 androidx-palette = "1.0.0"
@@ -73,7 +72,6 @@ androidx-compose-materialWindow = { module = "androidx.compose.material3:materia
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
-androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "androidx-constraintlayout" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-corektx" }
 androidx-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "foundation" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
