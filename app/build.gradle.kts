@@ -3,8 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.kapt)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -130,8 +130,8 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.glide)
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
-    kapt(libs.hilt.ext.compiler)
+    ksp(libs.hilt.compiler)
+    ksp(libs.hilt.ext.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.timber)
     implementation(libs.firebase.firestore)
