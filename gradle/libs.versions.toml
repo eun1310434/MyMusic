@@ -14,7 +14,7 @@ androidx-media3 = "1.4.1"
 # @keep
 compileSdk = "35"
 compose-compiler = "1.5.5"
-coroutines = "1.7.3"
+coroutines = "1.10.1"
 exoplayerCore = "2.19.1"
 exoplayerUi = "2.19.1"
 extensionMediasession = "2.19.1"
