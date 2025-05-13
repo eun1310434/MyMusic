@@ -120,7 +120,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.extensions)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.runtime)
-    implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.runtime)
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.kotlinx.coroutines.core)
