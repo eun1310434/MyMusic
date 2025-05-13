@@ -57,7 +57,7 @@ fun SharedTransitionScope.ProfileDetailScreen(
             modifier = Modifier
                 .height((LocalConfiguration.current.screenHeightDp * 0.75).dp)
                 .sharedElement(
-                    state = rememberSharedContentState(key = "artistId/${artist?.id}"),
+                    sharedContentState = rememberSharedContentState(key = "artistId/${artist?.id}"),
                     animatedVisibilityScope = animatedVisibilityScope,
                     boundsTransform = { _, _ ->
                         tween(durationMillis = 1000)

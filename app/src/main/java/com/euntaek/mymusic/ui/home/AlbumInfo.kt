@@ -99,7 +99,7 @@ fun SharedTransitionScope.AlbumInfo(
                     .clickable { onImageClick(artist.id) }
                     .fillMaxWidth()
                     .sharedElement(
-                        state = rememberSharedContentState(key = "artistId/${artist.id}"),
+                        sharedContentState = rememberSharedContentState(key = "artistId/${artist.id}"),
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = { _, _ ->
                             tween(durationMillis = 1000)
