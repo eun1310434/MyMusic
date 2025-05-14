@@ -56,6 +56,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -78,6 +82,8 @@ android {
 }
 
 dependencies {
+    implementation(projects.ui)
+
     // Use a Bill of Materials: https://developer.android.com/develop/ui/compose/bom
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)

@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.euntaek.mymusic.data.entities.Artist
-import com.euntaek.mymusic.ui.components.CachedAsyncImage
+import com.euntaek.ui.CachedAsyncImage
 import com.euntaek.mymusic.ui.player.SmallMusicPlayerDefaults
 import com.euntaek.mymusic.viewmodels.MainViewModel
 
@@ -110,7 +110,7 @@ fun SharedTransitionScope.ProfileItem(
         modifier = modifier
             .clip(shape = RoundedCornerShape(percent = 5))
     ) {
-        CachedAsyncImage(
+        com.euntaek.ui.CachedAsyncImage(
             modifier = Modifier
                 .fillMaxSize()
                 .sharedElement(

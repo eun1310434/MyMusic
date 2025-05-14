@@ -39,7 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.euntaek.mymusic.data.entities.Artist
-import com.euntaek.mymusic.ui.components.CachedAsyncImage
+import com.euntaek.ui.CachedAsyncImage
 import kotlinx.coroutines.delay
 
 

@@ -34,7 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.euntaek.mymusic.ui.components.CachedAsyncImage
+import com.euntaek.ui.CachedAsyncImage
 import com.euntaek.mymusic.ui.player.SmallMusicPlayerDefaults
 import com.euntaek.mymusic.viewmodels.MainViewModel
 
@@ -51,7 +51,7 @@ fun SharedTransitionScope.ProfileDetailScreen(
     val musicData by viewModel.musicData.collectAsStateWithLifecycle()
     val artist = musicData?.artists?.firstOrNull { it.id == artistId }
     Box(modifier = Modifier.fillMaxSize()) {
-        CachedAsyncImage(
+        com.euntaek.ui.CachedAsyncImage(
             imageUrl = artist?.image.orEmpty(),
             contentScale = ContentScale.Crop,
             modifier = Modifier

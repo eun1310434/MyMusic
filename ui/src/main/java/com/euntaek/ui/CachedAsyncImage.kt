@@ -1,4 +1,4 @@
-package com.euntaek.mymusic.ui.components
+package com.euntaek.ui
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
