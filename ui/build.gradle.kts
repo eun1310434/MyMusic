@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.euntaek.ui"
+    namespace = "com.euntaek.mymusic.ui"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
@@ -46,6 +46,8 @@ android {
 dependencies {
     implementation(libs.coil.kt.compose)
     implementation(libs.coil.kt.gif)
+
+    implementation(libs.androidx.material3.android)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

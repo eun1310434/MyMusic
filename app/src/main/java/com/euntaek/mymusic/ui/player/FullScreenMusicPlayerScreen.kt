@@ -69,7 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.euntaek.mymusic.R
 import com.euntaek.mymusic.data.entities.Song
-import com.euntaek.ui.CachedAsyncImage
+import com.euntaek.mymusic.ui.CachedAsyncImage
 import com.euntaek.mymusic.utility.formatLong
 import com.euntaek.mymusic.viewmodels.MainViewModel
 
@@ -223,7 +223,7 @@ private fun FullScreenMusicPlayerContent(
     Box(modifier = Modifier.fillMaxSize()) {
         Surface {
             if (!backgroundImage.isNullOrEmpty()) {
-                com.euntaek.ui.CachedAsyncImage(
+                CachedAsyncImage(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                     imageUrl = backgroundImage,
