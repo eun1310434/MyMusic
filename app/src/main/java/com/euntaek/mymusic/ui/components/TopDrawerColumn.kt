@@ -24,7 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.IntOffset
-import com.euntaek.mymusic.utility.toPx
+import com.euntaek.mymusic.ui.utils.toPx
 import kotlinx.coroutines.launch
 
 @Composable
