@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.euntaek.mymusic.R
+import com.euntaek.mymusic.ui.R
 
 
 private val MontserratFontFamily = FontFamily(
