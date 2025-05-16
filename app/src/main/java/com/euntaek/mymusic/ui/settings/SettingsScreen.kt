@@ -27,9 +27,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.euntaek.mymusic.BuildConfig
 import com.euntaek.mymusic.R
 import com.euntaek.mymusic.data.entities.AppInfo
-import com.euntaek.mymusic.ui.components.Icon
-import com.euntaek.mymusic.ui.components.ProgressIndicatorPage
-import com.euntaek.mymusic.ui.components.TopBarMenu
+import com.euntaek.mymusic.ui.Icon
+import com.euntaek.mymusic.ui.ProgressIndicatorPage
+import com.euntaek.mymusic.ui.TopBarMenu
 import com.euntaek.mymusic.viewmodels.MainViewModel
 
 

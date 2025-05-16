@@ -17,9 +17,9 @@ import com.euntaek.mymusic.R
 import com.euntaek.mymusic.data.entities.AppInfo
 import com.euntaek.mymusic.data.entities.Artist
 import com.euntaek.mymusic.data.entities.Song
-import com.euntaek.mymusic.ui.components.ProgressIndicatorPage
-import com.euntaek.mymusic.ui.components.TopBarMenu
-import com.euntaek.mymusic.ui.components.TopDrawerColumn
+import com.euntaek.mymusic.ui.ProgressIndicatorPage
+import com.euntaek.mymusic.ui.TopBarMenu
+import com.euntaek.mymusic.ui.TopDrawerColumn
 import com.euntaek.mymusic.viewmodels.MainViewModel
 
 @OptIn(ExperimentalSharedTransitionApi::class)

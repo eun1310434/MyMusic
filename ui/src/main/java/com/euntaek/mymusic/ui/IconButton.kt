@@ -1,4 +1,4 @@
-package com.euntaek.mymusic.ui.components
+package com.euntaek.mymusic.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable

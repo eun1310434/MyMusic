@@ -1,4 +1,4 @@
-package com.euntaek.mymusic.ui.components
+package com.euntaek.mymusic.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
