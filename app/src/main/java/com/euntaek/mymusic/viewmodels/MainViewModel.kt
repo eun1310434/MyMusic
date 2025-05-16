@@ -11,7 +11,6 @@ import com.euntaek.mymusic.service.MusicServiceConnection
 import com.euntaek.mymusic.usecase.GetAppInfoUseCase
 import com.euntaek.mymusic.usecase.GetMusicDataUseCase
 import com.euntaek.mymusic.utility.currentPlaybackPosition
-import com.euntaek.mymusic.utility.execUsesCase
 import com.euntaek.mymusic.utility.isPlayEnabled
 import com.euntaek.mymusic.utility.isPlaying
 import com.euntaek.mymusic.utility.isPrepared
@@ -62,13 +61,14 @@ class MainViewModel @Inject constructor(
     private val _currentPlaybackPosition = MutableStateFlow(0L)
     val currentPlaybackPosition = _currentPlaybackPosition.asStateFlow()
 
-    val playbackProgress = combine(_currentPlaybackPosition, currentPlayingSong) { currentPlaybackPosition,song ->
-        val playbackPos = currentPlaybackPosition.toFloat()
-        val duration = song?.duration
-        if (playbackPos> 0 && duration != null) {
-            currentPlaybackPosition.toFloat() / duration
-        } else 0f
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0f)
+    val playbackProgress =
+        combine(_currentPlaybackPosition, currentPlayingSong) { currentPlaybackPosition, song ->
+            val playbackPos = currentPlaybackPosition.toFloat()
+            val duration = song?.duration
+            if (playbackPos > 0 && duration != null) {
+                currentPlaybackPosition.toFloat() / duration
+            } else 0f
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, 0f)
 
     init {
         getMusicData()
@@ -77,20 +77,18 @@ class MainViewModel @Inject constructor(
 
     private fun getMusicData() {
         viewModelScope.launch(Dispatchers.IO) {
-            execUsesCase(
-                load = { getMusicDataUseCase() },
-                success = { musicData -> _musicData.update { musicData } }
-            )
+            getMusicDataUseCase().onSuccess { musicData ->
+                _musicData.update { musicData }
+            }
         }
     }
 
 
     fun getAppInfo(appId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            execUsesCase(
-                load = { getAppInfoUseCase() },
-                success = { appInfo -> _appInfo.value = appInfo.firstOrNull { it.id == appId } }
-            )
+            getAppInfoUseCase().onSuccess { appInfo ->
+                _appInfo.value = appInfo.firstOrNull { it.id == appId }
+            }
         }
     }
 

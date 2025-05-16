@@ -36,14 +36,3 @@ fun MediaMetadataCompat.toSong(): Song? {
         )
     }
 }
-
-suspend fun <T> execUsesCase(
-    load: suspend () -> Either<T>,
-    success: (T) -> Unit,
-    error: (Exception) -> Unit = {}
-) {
-    when (val result = load()) {
-        is Either.Success -> success(result.data)
-        is Either.Error -> error(result.exception)
-    }
-}

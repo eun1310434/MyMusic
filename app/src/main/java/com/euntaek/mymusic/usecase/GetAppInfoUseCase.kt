@@ -1,6 +1,5 @@
 package com.euntaek.mymusic.usecase
 
-import com.euntaek.mymusic.utility.Either
 import com.euntaek.mymusic.data.entities.AppInfo
 import com.euntaek.mymusic.data.repository.Constants
 import com.google.firebase.firestore.FirebaseFirestore
@@ -10,16 +9,16 @@ import timber.log.Timber
 class GetAppInfoUseCase {
     private val db = FirebaseFirestore.getInstance()
     private val appInfoCollection = db.collection(Constants.APP_INFO_COLLECTION)
-    suspend operator fun invoke(): Either<List<AppInfo>> {
+    suspend operator fun invoke(): Result<List<AppInfo>> {
         return try {
             val appInfo = appInfoCollection
                 .get()
                 .await()
                 .toObjects(AppInfo::class.java)
-            Either.Success(appInfo)
+            Result.success(appInfo)
         } catch (error: Exception) {
             Timber.tag("GetAppInfoUseCase").e(error)
-            Either.Error(error)
+            Result.failure(error)
         }
     }
 }
