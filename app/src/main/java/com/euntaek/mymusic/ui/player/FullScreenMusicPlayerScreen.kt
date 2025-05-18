@@ -225,9 +225,8 @@ private fun FullScreenMusicPlayerContent(
             if (!backgroundImage.isNullOrEmpty()) {
                 CachedAsyncImage(
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
                     imageUrl = backgroundImage,
-                    isGIF = true
+                    contentScale = ContentScale.Crop
                 )
             }
 
