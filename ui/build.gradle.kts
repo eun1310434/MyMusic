@@ -44,15 +44,14 @@ android {
 }
 
 dependencies {
-    implementation(libs.coil.kt.compose)
-    implementation(libs.coil.kt.gif)
-
-    implementation(libs.androidx.material3.android)
-    implementation(libs.euntaek.ui.component)
+    api(libs.coil.kt.compose)
+    api(libs.coil.kt.gif)
+    api(libs.androidx.material3.android)
+    api(libs.euntaek.ui.component)
+    api(libs.androidx.appcompat)
+    api(libs.google.android.material)
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.google.android.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
