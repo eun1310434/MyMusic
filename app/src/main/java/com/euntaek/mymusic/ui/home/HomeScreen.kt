@@ -17,10 +17,10 @@ import com.euntaek.mymusic.R
 import com.euntaek.mymusic.data.entities.AppInfo
 import com.euntaek.mymusic.data.entities.Artist
 import com.euntaek.mymusic.data.entities.Song
-import com.euntaek.mymusic.ui.ProgressIndicatorPage
-import com.euntaek.mymusic.ui.TopBarMenu
-import com.euntaek.mymusic.ui.TopDrawerColumn
 import com.euntaek.mymusic.viewmodels.MainViewModel
+import com.euntaek.uicomponent.progressindicator.ProgressIndicatorScreen
+import com.euntaek.uicomponent.topbar.TopBarMenu
+import com.euntaek.uicomponent.topdrawerlayout.TopDrawerLayout
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -56,7 +56,7 @@ fun SharedTransitionScope.HomeScreen(
             isSettingUpdateMarkEnabled = isSettingUpdateMarkEnabled
         )
     } else {
-        ProgressIndicatorPage()
+        ProgressIndicatorScreen()
     }
 }
 
@@ -75,7 +75,7 @@ private fun SharedTransitionScope.MainPage(
     onSettingIconClick: () -> Unit,
     isSettingUpdateMarkEnabled: Boolean
 ) {
-    TopDrawerColumn(
+    TopDrawerLayout(
         modifier = modifier,
         topBar = { scale ->
             TopBarMenu(

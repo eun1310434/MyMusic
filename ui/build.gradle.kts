@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.coil.kt.gif)
 
     implementation(libs.androidx.material3.android)
+    implementation(libs.euntaek.ui.component)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

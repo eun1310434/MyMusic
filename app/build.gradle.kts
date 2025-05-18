@@ -90,6 +90,7 @@ dependencies {
     testImplementation(composeBom)
     androidTestImplementation(composeBom)
 
+    implementation(libs.euntaek.ui.component)
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.junit.ktx)
     implementation(libs.transport.runtime)

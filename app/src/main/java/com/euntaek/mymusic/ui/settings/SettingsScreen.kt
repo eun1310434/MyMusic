@@ -27,10 +27,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.euntaek.mymusic.BuildConfig
 import com.euntaek.mymusic.R
 import com.euntaek.mymusic.data.entities.AppInfo
-import com.euntaek.mymusic.ui.Icon
-import com.euntaek.mymusic.ui.ProgressIndicatorPage
-import com.euntaek.mymusic.ui.TopBarMenu
 import com.euntaek.mymusic.viewmodels.MainViewModel
+import com.euntaek.uicomponent.icon.Icon
+import com.euntaek.uicomponent.progressindicator.ProgressIndicatorScreen
+import com.euntaek.uicomponent.topbar.TopBarMenu
 
 
 @Composable
@@ -42,7 +42,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     if (appInfo != null) {
         SettingsPage(appInfo = appInfo!!)
     } else {
-        ProgressIndicatorPage()
+        ProgressIndicatorScreen()
     }
 }
 

@@ -34,9 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.euntaek.mymusic.ui.CachedAsyncImage
 import com.euntaek.mymusic.ui.player.SmallMusicPlayerDefaults
 import com.euntaek.mymusic.viewmodels.MainViewModel
+import com.euntaek.uicomponent.cachedasyncImage.CachedAsyncImage
 
 
 @OptIn(ExperimentalSharedTransitionApi::class)

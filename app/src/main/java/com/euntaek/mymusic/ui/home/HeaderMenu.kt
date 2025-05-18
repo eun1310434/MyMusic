@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import com.euntaek.mymusic.R
-import com.euntaek.mymusic.ui.IconButton
+import com.euntaek.uicomponent.button.iconbutton.IconButton
 
 
 @Composable
